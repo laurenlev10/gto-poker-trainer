@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🃏 GTO Trainer — Ori Hasson</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{--felt:#0b3d2e;--felt2:#0a2e23;--gold:#e9c46a;--gold2:#d4a83a;--ink:#eaf4ef;--muted:#9fc4b4;
+    --card:#0f4a37;--card2:#0d3f2f;--ok:#22c55e;--bad:#ef4444;--warn:#f59e0b;--chip:#134e3a;--line:#1c6047;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Arial,Helvetica,sans-serif;color:var(--ink);
+    background:radial-gradient(circle at 50% 0%,#12543e 0%,var(--felt) 45%,var(--felt2) 100%);min-height:100vh;padding:0 0 60px}
+  a{color:inherit}
+  .wrap{max-width:960px;margin:0 auto;padding:0 16px}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 16px 8px;max-width:960px;margin:0 auto;flex-wrap:wrap}
+  .brand h1{margin:0;font-size:26px;letter-spacing:.5px}
+  .brand .sub{color:var(--muted);font-size:13px;margin-top:2px}
+  .backlink{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;text-decoration:none;color:var(--gold)}
+  .tabs{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap}
+  .tab{flex:1;min-width:100px;text-align:center;padding:11px 8px;border-radius:12px;background:var(--card2);border:1px solid var(--line);cursor:pointer;font-size:14px;font-weight:600;user-select:none;transition:.15s}
+  .tab.active{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2b06;border-color:var(--gold)}
+  .panel{display:none;animation:fade .2s}.panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+  h3{margin:0 0 6px}
+  /* hero */
+  .hero{position:relative;overflow:hidden;border-radius:20px;padding:30px 26px;margin:12px 0 6px;
+    background:radial-gradient(circle at 15% 20%,rgba(233,196,106,.16),transparent 45%),radial-gradient(circle at 85% 80%,rgba(15,118,110,.35),transparent 50%),linear-gradient(135deg,#0a2e23 0%,#0b3d2e 55%,#0d3f2f 100%);
+    border:1px solid var(--gold);box-shadow:0 10px 40px rgba(0,0,0,.35),inset 0 0 60px rgba(233,196,106,.05)}
+  .hero .suits{position:absolute;top:-10px;left:-8px;font-size:120px;opacity:.06;line-height:1;transform:rotate(-12deg);pointer-events:none}
+  .hero .suits2{position:absolute;bottom:-30px;right:-6px;font-size:130px;opacity:.06;line-height:1;transform:rotate(10deg);pointer-events:none}
+  .hero-kicker{color:var(--gold);font-weight:800;letter-spacing:1px;font-size:15px;margin-bottom:4px;position:relative}
+  .hero-title{font-size:32px;margin:0 0 10px;font-weight:800;line-height:1.15;position:relative;
+    background:linear-gradient(90deg,#fff,var(--gold));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero-sub{font-size:15px;line-height:1.7;color:#dcece4;max-width:660px;margin:0 0 14px;position:relative}
+  .hero-quote{position:relative;font-size:15px;font-style:italic;color:var(--gold);border-right:3px solid var(--gold);padding:6px 12px 6px 0;margin:0 0 18px;min-height:22px}
+  .hero-cta{position:relative;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;color:var(--muted)}
+  .hero-ava{float:left;width:108px;height:108px;border-radius:50%;object-fit:cover;object-position:center 30%;border:3px solid var(--gold);box-shadow:0 6px 22px rgba(0,0,0,.45);margin:0 18px 8px 0}
+  @media(max-width:560px){.hero-title{font-size:24px}.hero-ava{width:78px;height:78px}}
+  /* journey */
+  .journey{display:flex;gap:6px;align-items:stretch;overflow-x:auto;padding:6px 2px}
+  .jstep{flex:1;min-width:96px;text-align:center;padding:12px 6px;border-radius:12px;background:var(--card2);border:1px solid var(--line);position:relative}
+  .jstep .ico{font-size:22px}
+  .jstep .nm{font-size:12px;color:var(--muted);margin-top:3px}
+  .jstep.done{border-color:var(--ok);background:rgba(34,197,94,.10)}
+  .jstep.cur{border-color:var(--gold);background:linear-gradient(135deg,rgba(233,196,106,.18),rgba(212,168,58,.06));box-shadow:0 0 0 1px var(--gold)}
+  .jstep.cur .nm{color:var(--gold);font-weight:700}
+  .lvlbar{height:10px;background:var(--card2);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:10px}
+  .lvlbar>div{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold))}
+  .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media(max-width:640px){.statgrid{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+  .stat .n{font-size:28px;font-weight:800;color:var(--gold)}
+  .stat .n.pos{color:var(--ok)}.stat .n.neg{color:var(--bad)}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:2px}
+  .bars{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .barrow{display:flex;align-items:center;gap:10px}
+  .barrow .name{width:150px;font-size:13px;color:var(--muted)}
+  .bartrack{flex:1;height:14px;background:var(--card2);border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+  .barfill{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:8px;transition:width .4s}
+  .barrow .pct{width:86px;text-align:left;font-size:12px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+  .chip{padding:8px 14px;border-radius:999px;background:var(--chip);border:1px solid var(--line);cursor:pointer;font-size:13px;user-select:none}
+  .chip.active{background:var(--gold);color:#3a2b06;border-color:var(--gold);font-weight:700}
+  .qmeta{color:var(--gold);font-weight:700;font-size:14px;margin-bottom:6px}
+  .qbox{font-size:19px;line-height:1.55;margin:4px 0 14px;min-height:52px}
+  .scene{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:8px 0 14px;font-size:16px;line-height:1.6}
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{padding:14px 16px;border-radius:12px;background:var(--card2);border:1px solid var(--line);cursor:pointer;font-size:15px;transition:.12s}
+  .opt:hover{border-color:var(--gold)}
+  .opt.correct{background:rgba(34,197,94,.18);border-color:var(--ok)}
+  .opt.wrong{background:rgba(239,68,68,.16);border-color:var(--bad)}.opt.dim{opacity:.55}
+  .numrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  input.num{font-size:22px;padding:12px 14px;width:150px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--ink);text-align:center}
+  .unit{color:var(--muted);font-size:16px}
+  .btn{padding:12px 22px;border-radius:12px;border:none;cursor:pointer;font-size:15px;font-weight:700}
+  .btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2b06}
+  .btn.ghost{background:var(--card2);color:var(--ink);border:1px solid var(--line)}
+  .btn.big{flex:1;min-width:140px;padding:20px;font-size:18px}
+  .btn.shove{background:linear-gradient(135deg,#f59e0b,#e5484d);color:#fff}
+  .btn.fold{background:var(--card2);color:var(--ink);border:1px solid var(--line)}
+  .feedback{margin-top:14px;padding:14px 16px;border-radius:12px;font-size:15px;line-height:1.6;display:none}
+  .feedback.show{display:block}
+  .feedback.good{background:rgba(34,197,94,.14);border:1px solid var(--ok)}
+  .feedback.err{background:rgba(239,68,68,.12);border:1px solid var(--bad)}
+  .feedback .formula{margin-top:8px;color:var(--gold);font-family:Consolas,monospace;font-size:14px;direction:ltr;text-align:left}
+  .handbig{font-size:48px;font-weight:800;letter-spacing:4px;text-align:center;margin:6px 0}
+  .handbig .r{color:#ff6b6b}
+  .pfmeta{display:flex;justify-content:center;gap:26px;margin:2px 0 12px;flex-wrap:wrap}
+  .pfmeta .v{font-size:24px;font-weight:800;color:var(--gold)}.pfmeta .k{font-size:12px;color:var(--muted)}
+  .weak{background:rgba(245,158,11,.12);border:1px solid var(--warn);border-radius:12px;padding:12px 16px;margin-top:12px;font-size:14px}
+  .note{background:rgba(233,196,106,.08);border:1px solid var(--line);border-right:3px solid var(--gold);border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.6;margin:10px 0}
+  .sync{font-size:12px;color:var(--muted);margin-top:10px;text-align:center}.sync b{color:var(--gold)}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;opacity:0;transition:.3s;z-index:99;border:1px solid var(--line)}.toast.show{opacity:1}
+  .mini{font-size:12px;color:var(--muted);margin-top:4px}
+  .row-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .kbd{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:12px;color:var(--muted)}
+  table.rng{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  table.rng th,table.rng td{border:1px solid var(--line);padding:8px 10px;text-align:right}
+  table.rng th{background:var(--card2);color:var(--gold)}
+  table.rng td.pos{color:var(--muted);white-space:nowrap}
+  code.rr{direction:ltr;display:inline-block;font-family:Consolas,monospace;color:var(--ink)}
+  /* journal form */
+  .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:640px){.form-grid{grid-template-columns:repeat(2,1fr)}}
+  .fld{display:flex;flex-direction:column;gap:4px}
+  .fld label{font-size:12px;color:var(--muted)}
+  .fld input,.fld select,.fld textarea{background:var(--card2);border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:10px 12px;font-size:14px;font-family:inherit}
+  .fld.wide{grid-column:1/-1}
+  table.jt{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+  table.jt th,table.jt td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:right;white-space:nowrap}
+  table.jt th{color:var(--gold);font-size:12px}
+  table.jt td.net-pos{color:var(--ok);font-weight:700}table.jt td.net-neg{color:var(--bad);font-weight:700}
+  .del{cursor:pointer;color:var(--bad);opacity:.7}.del:hover{opacity:1}
+  .goalcard{display:flex;align-items:center;gap:12px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  .goalcard.done{border-color:var(--ok);background:rgba(34,197,94,.08)}
+  .goalcard .gico{font-size:24px;width:34px;text-align:center}
+  .goalcard .gmid{flex:1}
+  .goalcard .gname{font-size:14px;font-weight:600}
+  .goalcard .gtrack{height:8px;background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:6px}
+  .goalcard .gtrack>div{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold))}
+  .goalcard.done .gtrack>div{background:var(--ok)}
+  .goalcard .gval{font-size:12px;color:var(--muted);white-space:nowrap}
+  .chartbox{position:relative;height:240px;margin-top:10px}
+
+  /* lessons / academy */
+  .lesson{background:var(--card2);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+  .lesson.done{border-color:var(--ok)}
+  .lesson summary{cursor:pointer;padding:14px 16px;font-size:15px;list-style:none;display:flex;align-items:center;gap:10px}
+  .lesson summary::-webkit-details-marker{display:none}
+  .lesson .lico{font-size:20px}
+  .lesson .lmin{color:var(--muted);font-size:12px;margin-inline-start:auto}
+  .lesson .ldone{color:var(--ok);font-weight:800;font-size:16px}
+  .lesson .lbody{padding:0 16px 16px;font-size:14px;line-height:1.75;color:#dcece4}
+  .lesson .ltake{margin-top:10px;background:rgba(233,196,106,.07);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+  .lesson .ltake ul{margin:6px 0 0;padding-inline-start:18px}
+  .lesson .ltake li{margin:3px 0}
+  .learnhead{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+  .learnhead .lvlbar{flex:1;margin-top:0}
+  /* recommended flow */
+  .flow{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .fstep{display:flex;align-items:center;gap:12px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;transition:.12s}
+  .fstep:hover{border-color:var(--gold);transform:translateX(-2px)}
+  .fnum{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3a2b06;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .fstep .ftxt{flex:1}.fstep .ftitle{font-weight:700;font-size:14px}.fstep .fdesc{font-size:12px;color:var(--muted)}
+  .fstep .farrow{color:var(--gold);font-size:18px}
+
+  /* onboarding + tour */
+  .tour-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none}
+  .tour-backdrop.show{display:block}
+  .tour-hi{position:relative;z-index:210;box-shadow:0 0 0 3px var(--gold),0 0 0 8px rgba(233,196,106,.30)!important;border-radius:12px;animation:tourpulse 1.3s infinite}
+  @keyframes tourpulse{0%,100%{box-shadow:0 0 0 3px var(--gold),0 0 0 6px rgba(233,196,106,.30)}50%{box-shadow:0 0 0 3px var(--gold),0 0 0 13px rgba(233,196,106,.10)}}
+  .tour-tip{position:fixed;z-index:220;max-width:300px;background:var(--card);border:1px solid var(--gold);border-radius:14px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.5);display:none}
+  .tour-tip.show{display:block}
+  .tour-tip h4{margin:0 0 6px;color:var(--gold);font-size:15px}
+  .tour-tip p{margin:0 0 12px;font-size:14px;line-height:1.6}
+  .tour-tip .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .tour-tip .cnt{font-size:12px;color:var(--muted)}
+  .welcome{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:230;display:none;align-items:center;justify-content:center;padding:16px}
+  .welcome.show{display:flex}
+  .welcome .wcard{max-width:470px;background:radial-gradient(circle at 20% 0%,rgba(233,196,106,.14),transparent 55%),linear-gradient(135deg,#0a2e23,#0d3f2f);border:1px solid var(--gold);border-radius:20px;padding:26px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .welcome h2{margin:0 0 6px;font-size:24px}
+  .welcome .wstep{display:flex;gap:10px;align-items:flex-start;margin:9px 0;font-size:14px;line-height:1.5}
+  .welcome .wnum{width:24px;height:24px;border-radius:50%;background:var(--gold);color:#3a2b06;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:13px}
+  .helpbtn{background:rgba(0,0,0,.25);border:1px solid var(--gold);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--gold);cursor:pointer;font-weight:600}
+
+  /* gentle attention pulse on primary in-page actions */
+  .pulse-hint{animation:btnpulse 1.8s ease-in-out infinite}
+  @keyframes btnpulse{0%,100%{box-shadow:0 0 0 0 rgba(233,196,106,.55)}50%{box-shadow:0 0 0 10px rgba(233,196,106,0)}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <h1>🃏 GTO Trainer — MTT</h1>
+    <div class="sub">מכון האימון של אורי חסון · חידוד קצוות · ICM בשולחנות גמר · Push/Fold · Final Table</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="helpbtn" onclick="startTour()">❓ סיור</button>
+    <a class="backlink" href="../">← חזרה למרכז</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" data-tab="overview">📊 סקירה</div>
+    <div class="tab" data-tab="learn">📚 לימוד</div>
+    <div class="tab" data-tab="pushfold">♠️ Push/Fold</div>
+    <div class="tab" data-tab="spot">🎯 ICM</div>
+    <div class="tab" data-tab="math">🧮 Math</div>
+    <div class="tab" data-tab="warmup">🔥 חימום</div>
+    <div class="tab" data-tab="exam">📝 מבחן</div>
+    <div class="tab" data-tab="journal">📓 יומן</div>
+    <div class="tab" data-tab="upcoming">🗓️ טורנירים</div>
+    <div class="tab" data-tab="career">📈 קריירה</div>
+    <div class="tab" data-tab="goals">🏁 יעדים</div>
+    <div class="tab" data-tab="ref">📖 מדריך</div>
+  </div>
+
+  <!-- ===== OVERVIEW ===== -->
+  <div class="panel active" id="p-overview">
+    <div class="hero">
+      <div class="suits">♠♥</div><div class="suits2">♦♣</div>
+      <img class="hero-ava" src="ori.jpg" alt="Eli Frenkel" onerror="this.style.display='none'">
+      <div class="hero-kicker">ברוך הבא, אורי חסון</div>
+      <h1 class="hero-title">לשמור על היתרון — ולתואר הגדול הבא 🏆</h1>
+      <p class="hero-sub">כבר פרו בין-לאומי — <b>$2,285,096</b> ברווחים, תואר WSOP, ומקום 10 ברשימת ההכנסות של ישראל. ברמה הזו הקצה נמצא בנקודות הקטנות: <b>ICM מדויק בשולחנות גמר והיי-רולרים</b>, Push/Fold ללא דליפות, ומשמעת ברגעים הגדולים. המערכת הזו שומרת על החוד — ומכוונת לתואר הגדול הבא.</p>
+      <div class="hero-quote" id="heroQuote">&nbsp;</div>
+      <div class="hero-cta">
+        <button class="btn primary" onclick="go('pushfold')">בוא נתחיל ←</button>
+        <span class="hero-badge">🏅 דרגה: <b id="hero-level" style="color:var(--gold);margin-inline-start:4px">—</b></span>
+        <span class="hero-badge">🔥 רצף: <b id="hero-streak" style="color:var(--gold);margin-inline-start:4px">0</b></span>
+        <span class="hero-badge">🎯 דיוק: <b id="hero-acc" style="color:var(--gold);margin-inline-start:4px">—</b></span>
+      </div>
+    </div>
+
+    <div class="card" id="daily-card">
+      <h3>🎯 אימון יומי <span id="daily-done" style="display:none;color:var(--ok)">· ✓ הושלם היום!</span></h3>
+      <div class="mini">היעד: 18 החלטות ביום. עקביות מנצחת כמות.</div>
+      <div class="lvlbar" style="margin-top:8px"><div id="daily-bar" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px">
+        <span class="mini">היום: <b id="daily-count" style="color:var(--gold)">0/18</b></span>
+        <span class="mini">רצף ימים: <b id="daily-streak" style="color:var(--gold)">0</b> 🔥</span>
+      </div>
+      <div class="row-actions"><button class="btn primary pulse-hint" onclick="go('pushfold')">התחל אימון יומי</button><button class="btn ghost" onclick="go('warmup')">🔥 חימום לפני טורניר</button></div>
+    </div>
+
+    <div class="card">
+      <h3>🗺️ מהיכן מתחילים?</h3>
+      <div class="mini">המסלול המומלץ — בדיוק בסדר הזה. אין צורך לנחש.</div>
+      <div class="flow">
+        <div class="fstep" onclick="go('learn')"><div class="fnum">1</div><div class="ftxt"><div class="ftitle">📚 למד את היסודות</div><div class="fdesc">10 שיעורים קצרים מאפס — GTO, ICM, Push/Fold, מיינדסט</div></div><div class="farrow">←</div></div>
+        <div class="fstep" onclick="go('pushfold')"><div class="fnum">2</div><div class="ftxt"><div class="ftitle">♠️ תרגל כל יום (5-10 דק')</div><div class="fdesc">Push/Fold ו-ICM — עד שזה הופך לאינטואיציה</div></div><div class="farrow">←</div></div>
+        <div class="fstep" onclick="go('spot')"><div class="fnum">3</div><div class="ftxt"><div class="ftitle">🎯 בחן את ההבנה</div><div class="fdesc">ספוטים אמיתיים של קאש-מול-טורניר</div></div><div class="farrow">←</div></div>
+        <div class="fstep" onclick="go('journal')"><div class="fnum">4</div><div class="ftxt"><div class="ftitle">📓 תעד ונתח כל טורניר</div><div class="fdesc">Buy-in, זכייה, וההערה החשובה: מה למדת</div></div><div class="farrow">←</div></div>
+        <div class="fstep" onclick="go('goals')"><div class="fnum">5</div><div class="ftxt"><div class="ftitle">🏁 כבוש יעדים ועלה בדרגה</div><div class="fdesc">אבני דרך שנפתחות מהאימון ומהיומן</div></div><div class="farrow">←</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🧭 מסלול ההתקדמות</h3>
+      <div class="mini" id="journey-sub">כל דרגה נפתחת כשמשלימים אבני דרך. המשך לתרגל ולתעד כדי לעלות.</div>
+      <div class="journey" id="journey"></div>
+      <div class="lvlbar"><div id="lvlfill" style="width:0%"></div></div>
+      <div class="mini" id="lvlnext"></div>
+    </div>
+
+    <div class="card">
+      <div class="statgrid">
+        <div class="stat"><div class="n" id="s-acc">—</div><div class="l">דיוק אימון</div></div>
+        <div class="stat"><div class="n" id="s-best">0</div><div class="l">רצף שיא</div></div>
+        <div class="stat"><div class="n" id="s-played">0</div><div class="l">טורנירים ביומן</div></div>
+        <div class="stat"><div class="n" id="s-net">$0</div><div class="l">רווח/הפסד נטו</div></div>
+      </div>
+      <div class="weak" id="weakbox" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <h3>דיוק לפי נושא</h3>
+      <div class="mini">הנקודה החלשה מודגשת למעלה — שם כדאי להשקיע.</div>
+      <div class="bars" id="topicbars"></div>
+    </div>
+
+    <div class="card">
+      <div class="row-actions">
+        <button class="btn primary" onclick="go('pushfold')">♠️ Push/Fold</button>
+        <button class="btn ghost" onclick="go('spot')">🎯 ICM</button>
+        <button class="btn ghost" onclick="go('journal')">📓 תעד טורניר</button>
+        <button class="btn ghost" onclick="go('goals')">🏁 יעדים</button>
+      </div>
+      <div class="sync" id="syncline">הנתונים נשמרים במכשיר שלך · <b id="syncstate">מקומי ✓</b></div>
+    </div>
+  </div>
+
+  <!-- ===== LEARN / ACADEMY ===== -->
+  <div class="panel" id="p-learn">
+    <div class="card">
+      <h3>📚 בית הספר ל-GTO בטורנירים</h3>
+      <div class="mini">רענון ועומק — לא "מאפס", אלא חידוד הנקודות שמזיזות winrate. עבור לפי הסדר או קפוץ למה שרלוונטי לך. סמן ✓ כשסיימת.</div>
+      <div class="learnhead" style="margin-top:12px">
+        <span class="mini" id="learnprog" style="white-space:nowrap">0/10 שיעורים</span>
+        <div class="lvlbar"><div id="learnfill" style="width:0%"></div></div>
+      </div>
+      <div id="learnlist" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- ===== PUSH / FOLD ===== -->
+  <div class="panel" id="p-pushfold">
+    <div class="card">
+      <div class="note">כשמקפלים אליך — <b>שאב או קיפול?</b> הטווחים מבוססים על טבלת ה-3-bet-All-in לפי סטאק. אלה טווחי <b>chipEV</b> — קרוב לבועה מהדקים אותם.</div>
+      <div class="handbig" id="pf-hand">—</div>
+      <div class="pfmeta">
+        <div><div class="v" id="pf-stack">—</div><div class="k">סטאק (bb)</div></div>
+        <div><div class="v" id="pf-pos">—</div><div class="k">פוזיציה</div></div>
+      </div>
+      <div class="row-actions">
+        <button class="btn big shove" onclick="pfAnswer(true)">🚀 שאב</button>
+        <button class="btn big fold" onclick="pfAnswer(false)">🚮 קיפול</button>
+      </div>
+      <div class="feedback" id="pf-fb"></div>
+      <div class="row-actions" id="pf-nextrow" style="display:none">
+        <button class="btn primary" onclick="pfNext()">הבא ← <span class="kbd">Enter</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ICM & SPOTS ===== -->
+  <div class="panel" id="p-spot">
+    <div class="card">
+      <div class="note">כל שאלה היא סיטואציה אמיתית מטורניר. בחר תשובה — ומיד תקבל את הנכונה + הסבר <b>למה ICM שינה אותה</b>. התחל ב"ICM".</div>
+      <div class="chips" id="spotchips">
+        <div class="chip active" data-c="all">הכל</div>
+        <div class="chip" data-c="icm">ICM / קאש-מול-טורניר</div>
+        <div class="chip" data-c="pushfold">Push/Fold</div>
+        <div class="chip" data-c="postflop">Postflop</div>
+        <div class="chip" data-c="bluff">בלוף / חסימות</div>
+      </div>
+      <div class="qmeta" id="sp-cat"></div>
+      <div class="scene" id="sp-q"></div>
+      <div class="opts" id="sp-opts"></div>
+      <div class="feedback" id="sp-fb"></div>
+      <div class="row-actions" id="sp-nextrow" style="display:none">
+        <button class="btn primary" onclick="spotNext()">הבא ←</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MATH ===== -->
+  <div class="panel" id="p-math">
+    <div class="card">
+      <div class="note">הכנס תשובה מספרית ולחץ בדוק. המערכת מגרילה מצב חדש בכל פעם ומראה את הנוסחה. המטרה: שהמספרים יהפכו לאינטואיציה.</div>
+      <div class="chips" id="mathchips">
+        <div class="chip active" data-m="mixed">🎲 מעורב</div>
+        <div class="chip" data-m="mdf">MDF</div>
+        <div class="chip" data-m="potodds">Pot Odds</div>
+        <div class="chip" data-m="combos">Bluff Combos</div>
+      </div>
+      <div class="qmeta" id="m-topic"></div>
+      <div class="qbox" id="m-q"></div>
+      <div class="numrow">
+        <input class="num" id="m-input" type="number" step="0.1" inputmode="decimal" placeholder="?">
+        <span class="unit" id="m-unit">%</span>
+        <button class="btn primary" id="m-check" onclick="mathCheck()">בדוק</button>
+        <button class="btn ghost" id="m-next" onclick="mathNext()" style="display:none">הבא ←</button>
+      </div>
+      <div class="mini"><span class="kbd">Enter</span> בודק / עובר לשאלה הבאה.</div>
+      <div class="feedback" id="m-fb"></div>
+    </div>
+  </div>
+
+  <!-- ===== WARM-UP ===== -->
+  <div class="panel" id="p-warmup">
+    <div class="card" id="wu-intro">
+      <h3>🔥 חימום לפני טורניר</h3>
+      <div class="note">יושב לטורניר עוד מעט? הרץ חימום מהיר של ~5 דקות — 10 החלטות מעורבות (Push/Fold + ICM + מתמטיקה), ובסוף תזכורות מיינדסט לפני שאתה מתיישב לשולחן.</div>
+      <div class="row-actions"><button class="btn primary pulse-hint" onclick="warmupStart()">▶️ התחל חימום</button></div>
+    </div>
+    <div class="card" id="wu-card" style="display:none"><div id="wu-quiz"></div></div>
+  </div>
+
+  <!-- ===== EXAM ===== -->
+  <div class="panel" id="p-exam">
+    <div class="card" id="ex-intro">
+      <h3>📝 מבחן</h3>
+      <div class="note">10 שאלות מעורבות — בלי חשיפת תשובה תוך כדי. בסוף מקבל ציון וסקירה מלאה. עשה מבחן אחת לשבוע כדי לראות את ההתקדמות.</div>
+      <div class="statgrid" style="margin:10px 0">
+        <div class="stat"><div class="n" id="ex-best">—</div><div class="l">הציון הכי גבוה</div></div>
+        <div class="stat"><div class="n" id="ex-count">0</div><div class="l">מבחנים שנעשו</div></div>
+      </div>
+      <div class="row-actions"><button class="btn primary pulse-hint" onclick="examStart()">▶️ התחל מבחן</button></div>
+      <div id="ex-hist" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="ex-card" style="display:none"><div id="ex-quiz"></div></div>
+  </div>
+
+  <!-- ===== JOURNAL ===== -->
+  <div class="panel" id="p-journal">
+    <div class="card">
+      <div class="statgrid">
+        <div class="stat"><div class="n" id="j-played">0</div><div class="l">טורנירים</div></div>
+        <div class="stat"><div class="n" id="j-net">$0</div><div class="l">נטו</div></div>
+        <div class="stat"><div class="n" id="j-roi">—</div><div class="l">ROI</div></div>
+        <div class="stat"><div class="n" id="j-itm">—</div><div class="l">ITM % (הגעה לכסף)</div></div>
+      </div>
+      <div class="statgrid" style="margin-top:10px">
+        <div class="stat"><div class="n" id="j-invested">$0</div><div class="l">הושקע</div></div>
+        <div class="stat"><div class="n" id="j-won">$0</div><div class="l">זכיות</div></div>
+        <div class="stat"><div class="n" id="j-best">$0</div><div class="l">הזכייה הגדולה</div></div>
+        <div class="stat"><div class="n" id="j-cashes">0</div><div class="l">כניסות לכסף</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>➕ תעד טורניר</h3>
+      <div class="form-grid">
+        <div class="fld"><label>תאריך</label><input type="date" id="j-date"></div>
+        <div class="fld"><label>מקום / קזינו</label><input type="text" id="j-venue" placeholder="למשל: King's / אונליין"></div>
+        <div class="fld"><label>שם הטורניר / סדרה</label><input type="text" id="j-series" placeholder="Main Event / Daily"></div>
+        <div class="fld"><label>מטבע</label><select id="j-cur"><option>$</option><option>€</option><option>₪</option><option>£</option></select></div>
+        <div class="fld"><label>Buy-in (כניסה)</label><input type="number" id="j-buyin" min="0" step="1" placeholder="0"></div>
+        <div class="fld"><label>Re-entries / add-on (עלות)</label><input type="number" id="j-reentry" min="0" step="1" placeholder="0"></div>
+        <div class="fld"><label>זכייה (Cash)</label><input type="number" id="j-cash" min="0" step="1" placeholder="0"></div>
+        <div class="fld"><label>מקום סיום</label><input type="number" id="j-pos" min="1" step="1" placeholder="למשל 12"></div>
+        <div class="fld"><label>מספר משתתפים</label><input type="number" id="j-field" min="1" step="1" placeholder="למשל 450"></div>
+        <div class="fld wide"><label>הערות (יד מעניינת, לקח, מצב ICM…)</label><textarea id="j-notes" rows="2" placeholder="מה למדת מהטורניר הזה?"></textarea></div>
+      </div>
+      <div class="row-actions">
+        <button class="btn primary" onclick="journalAdd()">💾 שמור טורניר</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📈 רווח מצטבר</h3>
+      <div class="chartbox"><canvas id="netChart"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h3>🗂️ היסטוריית טורנירים</h3>
+      <div style="overflow-x:auto"><table class="jt" id="jtable"><thead>
+        <tr><th>תאריך</th><th>מקום</th><th>טורניר</th><th>Buy-in</th><th>זכייה</th><th>נטו</th><th>מקום</th><th></th></tr>
+      </thead><tbody id="jbody"></tbody></table></div>
+      <div class="mini" id="jempty" style="display:none">עוד לא תיעדת טורנירים. מלא את הטופס למעלה אחרי הטורניר הבא 🙂</div>
+    </div>
+
+    <div class="card">
+      <h3>🃏 ניתוח ידיים — ספריית הידיים שלך</h3>
+      <div class="mini">תעד יד מאתגרת או היד שעפת עליה. המערכת נותנת עיקרון GTO/ICM לפי העומק והשלב.</div>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="fld"><label>היד</label><input id="h-hand" placeholder="A♠K♦ / TT"></div>
+        <div class="fld"><label>סטאק (bb)</label><input type="number" id="h-stack" placeholder="14"></div>
+        <div class="fld"><label>פוזיציה</label><input id="h-pos" placeholder="BTN / BB"></div>
+        <div class="fld"><label>שלב</label><input id="h-stage" placeholder="בועה / שולחן גמר / מוקדם"></div>
+        <div class="fld"><label>מה עשית</label><input id="h-action" placeholder="שאב / קלל / קיפול"></div>
+        <div class="fld"><label>תוצאה</label><input id="h-result" placeholder="עפתי / זכיתי בפוט"></div>
+        <div class="fld wide"><label>הערות / לקח</label><textarea id="h-notes" rows="2"></textarea></div>
+      </div>
+      <div class="row-actions"><button class="btn primary" onclick="handAdd()">💾 שמור יד לספרייה</button></div>
+      <div id="h-list" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- ===== UPCOMING ===== -->
+  <div class="panel" id="p-upcoming">
+    <div class="card">
+      <h3>🗓️ טורנירים קרובים</h3>
+      <div class="mini">תכנן לאילו טורנירים לכוון, עם ספירה לאחור. לכל טורניר יש כפתור חימום ישיר.</div>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="fld"><label>תאריך</label><input type="date" id="u-date"></div>
+        <div class="fld"><label>מקום</label><input type="text" id="u-venue" placeholder="Commerce / WSOP..."></div>
+        <div class="fld"><label>טורניר</label><input type="text" id="u-series" placeholder="Main Event"></div>
+        <div class="fld"><label>Buy-in</label><input type="number" id="u-buyin" placeholder="0"></div>
+        <div class="fld wide"><label>יעד אישי לטורניר</label><input type="text" id="u-goal" placeholder="להגיע לשולחן גמר · לשחק ICM ממושמע"></div>
+      </div>
+      <div class="row-actions"><button class="btn primary" onclick="upcomingAdd()">➕ הוסף ללוח</button></div>
+    </div>
+    <div class="card"><div id="u-list"></div></div>
+  </div>
+
+  <!-- ===== CAREER ===== -->
+  <div class="panel" id="p-career">
+    <div class="card">
+      <h3>📈 הקריירה של אלי — הנתונים האמיתיים</h3>
+      <div class="mini">מיובא מ-CardPlayer. ההצגה היא של הכספים (cashes) בלבד — כניסות שלא הגיעו לכסף אינן מתועדות שם, לכן אין כאן ROI, אלא תמונת קריירה.</div>
+      <div class="statgrid" style="margin-top:12px">
+        <div class="stat"><div class="n" id="c-earn">$0</div><div class="l">רווחים מתועדים</div></div>
+        <div class="stat"><div class="n" id="c-cashes">0</div><div class="l">כניסות מובילות</div></div>
+        <div class="stat"><div class="n" id="c-titles">0</div><div class="l">אליפויות 🏆</div></div>
+        <div class="stat"><div class="n" id="c-best">$0</div><div class="l">הזכייה הגדולה</div></div>
+      </div>
+    </div>
+    <div class="card" id="c-insight-card">
+      <h3>🎯 הפער — ומה עושים איתו</h3>
+      <div class="note" id="c-insight"></div>
+      <div class="row-actions">
+        <button class="btn primary" onclick="go('learn')">📚 ללמוד את המשחק המאוחר</button>
+        <button class="btn ghost" onclick="go('spot')">🎯 לתרגל ICM</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>📅 רווחים לפי שנה</h3>
+      <div class="chartbox"><canvas id="careerChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>🏅 הזכיות הגדולות</h3>
+      <div style="overflow-x:auto"><table class="jt"><thead><tr><th>תאריך</th><th>אירוע</th><th>Buy-in</th><th>מקום</th><th>זכייה</th></tr></thead><tbody id="c-top"></tbody></table></div>
+    </div>
+    <div class="card">
+      <h3>🥇 יעדי קריירה (החלום)</h3>
+      <div id="c-goals"></div>
+    </div>
+  </div>
+
+  <!-- ===== GOALS ===== -->
+  <div class="panel" id="p-goals">
+    <div class="card">
+      <h3>🏁 יעדים ואבני דרך</h3>
+      <div class="mini">חלקם נפתחים מהאימון, חלקם מהיומן. השלמת יעד מעלה אותך בדרגה.</div>
+      <div id="goalslist" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h3>🎯 יעד אישי</h3>
+      <div class="mini">הגדר לעצמך יעד חופשי (למשל "להגיע ל-3 שולחנות גמר השנה"). סמן ✓ כשהשגת.</div>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="fld wide"><input type="text" id="cg-text" placeholder="היעד שלי…"></div>
+      </div>
+      <div class="row-actions"><button class="btn primary" onclick="addCustomGoal()">➕ הוסף יעד</button></div>
+      <div id="customgoals" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- ===== REFERENCE ===== -->
+  <div class="panel" id="p-ref">
+    <div class="card">
+      <h3>🥇 כללי הזהב</h3>
+      <div class="note">ככל שאתה יותר <b>קרוב לבועה</b> והסטאק <b>בינוני</b> — שחק יותר <b>שמרני</b>. ככל שהסטאק <b>קצר</b> — יותר <b>אגרסיבי</b> (אתה כבר "מת" אם לא תפעל).</div>
+      <div class="note"><b>שיטת החזרה היומית:</b> אחרי כל סשן קח <b>3 ידיים</b> ושאל: (1) האם זו אותה החלטה בקאש? (2) אם לא — למה שיניתי? הכלי הכי מהיר להפנים ICM.</div>
+    </div>
+    <div class="card">
+      <h3>♠️ Push / Fold — 3-bet All-in לפי סטאק</h3>
+      <table class="rng">
+        <tr><th>סטאק</th><th>פוזיציה</th><th>טווח שאב</th></tr>
+        <tr><td rowspan="3">12–15bb</td><td class="pos">MP</td><td><code class="rr">77+, AQ+, AJs+, KQs</code></td></tr>
+        <tr><td class="pos">CO</td><td><code class="rr">66+, AJ+, ATs+, KQs, KJs</code></td></tr>
+        <tr><td class="pos">BTN</td><td><code class="rr">55+, AT+, A8s+, KJs+, QJs, JTs</code></td></tr>
+        <tr><td rowspan="3">16–22bb</td><td class="pos">MP</td><td><code class="rr">88+, AK, AQs</code></td></tr>
+        <tr><td class="pos">CO</td><td><code class="rr">77+, AQ+, AJs</code></td></tr>
+        <tr><td class="pos">BTN</td><td><code class="rr">66+, AJ+, ATs+, KQs</code></td></tr>
+        <tr><td>23–30bb</td><td class="pos">כללי</td><td><code class="rr">99+, AK, AQs</code> — לרוב עדיף 3-bet קטן</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>📋 טווחי פתיחה לפי שלב</h3>
+      <table class="rng">
+        <tr><th>שלב</th><th>CO</th><th>BTN</th><th>Blinds</th></tr>
+        <tr><td class="pos">מוקדם (40+)</td><td>~25%</td><td>40–45%</td><td>רחב מאוד</td></tr>
+        <tr><td class="pos">קרוב לבועה</td><td>12–14%</td><td>18–22%</td><td>צר בהרבה</td></tr>
+        <tr><td class="pos">Final Table</td><td>10–12%</td><td>15–18%</td><td>מאוד צר</td></tr>
+      </table>
+      <div class="mini">כלל: מתקרבים לשלבים המאוחרים — לצמצם טווח ב-30-40%.</div>
+    </div>
+    <div class="card">
+      <h3>🎯 אזור 25bb (הכי כואב)</h3>
+      <div class="note"><b>פתיחה:</b> MP 14% (<code class="rr">77+, AJs+, AQo+, KQs</code>) · CO 22% · BTN 35–38%.<br>
+      <b>קלל נגד Raise:</b> מ-MP רק <code class="rr">88+, AQs, AK</code> · מ-CO <code class="rr">77+, AJs+, AQo, KQs</code>.<br>
+      <b>הכלל:</b> אם פתחו לפניך — ברוב המקרים <b>קיפול או 3-bet All-in</b>. ה-Call הכי מסוכן.</div>
+    </div>
+  </div>
+</div>
+
+<div class="tour-backdrop" id="tourBackdrop"></div>
+<div class="tour-tip" id="tourTip">
+  <h4 id="tt-title"></h4><p id="tt-text"></p>
+  <div class="row"><span class="cnt" id="tt-cnt"></span>
+    <span><button class="btn ghost" style="padding:8px 12px" onclick="tourEnd()">דלג</button>
+    <button class="btn primary" style="padding:8px 14px" id="tt-next" onclick="tourNext()">הבא ←</button></span></div>
+</div>
+<div class="welcome" id="welcome"><div class="wcard">
+  <h2>🃏 ברוך הבא, אורי</h2>
+  <div class="mini" style="margin-bottom:12px">זה מכון האימון שלך לחידוד הקצה. הרבה כלים — אבל המסלול פשוט. ככה זה עובד:</div>
+  <div class="wstep"><div class="wnum">1</div><div><b>📚 לימוד</b> — 10 שיעורים קצרים שמלמדים GTO ו-ICM מאפס.</div></div>
+  <div class="wstep"><div class="wnum">2</div><div><b>♠️ תרגול יומי</b> — Push/Fold ו-ICM, 5-10 דקות ביום, בונים רצף.</div></div>
+  <div class="wstep"><div class="wnum">3</div><div><b>🔥 חימום</b> לפני כל טורניר · <b>📝 מבחן</b> אחת לשבוע.</div></div>
+  <div class="wstep"><div class="wnum">4</div><div><b>📓 יומן</b> אחרי כל טורניר · <b>📈 קריירה</b> ו-<b>🏁 יעדים</b> למעקב.</div></div>
+  <div class="row-actions" style="margin-top:18px"><button class="btn primary" onclick="welcomeStartTour()">▶️ קח אותי לסיור מודרך</button><button class="btn ghost" onclick="welcomeClose()">אתחיל לבד</button></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   GTO Trainer — MTT · Eli Frenkel
+   Training + Tournament Journal + Goals. Synced via GitHub (IRON RULE #7).
+   ============================================================ */
+var STATE_URL="../state/poker_training.json";
+var STATE_REPO_FILE="docs/state/poker_training.json";
+var REPO="laurenlev10/lauren-agent-hub-data";
+var POKER={_updated_at:null,settings:{currency:"$"},
+  stats:{answered:0,correct:0,streak:0,best:0,by_topic:{},daily:{}},
+  journal:[],goals_custom:[],lessons_done:{},exams:[],upcoming:[],hands:[]};
+var TOPIC_LABELS={pushfold:"Push/Fold",icm:"ICM / קאש-מול-טורניר",postflop:"Postflop",bluff:"בלוף/חסימות",mdf:"MDF (הגנה)",potodds:"Pot Odds",combos:"Bluff Combos"};
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function cur(){return (POKER.settings&&POKER.settings.currency)||"$";}
+function money(n){var s=(n<0?"-":"")+cur()+Math.abs(Math.round(n)).toLocaleString("en-US");return s;}
+
+/* ---------- persistence ---------- */
+function ensureTopic(t){if(!POKER.stats.by_topic[t])POKER.stats.by_topic[t]={a:0,c:0};}
+function record(topic,ok){
+  var s=POKER.stats;ensureTopic(topic);s.answered++;s.by_topic[topic].a++;
+  var dk=todayKey();if(!s.daily[dk])s.daily[dk]={a:0,c:0};s.daily[dk].a++;
+  if(ok){s.correct++;s.by_topic[topic].c++;s.daily[dk].c++;s.streak++;if(s.streak>s.best)s.best=s.streak;}else s.streak=0;
+  renderOverview();scheduleSave();
+}
+function migrate(){if(!POKER.settings)POKER.settings={currency:"$"};if(!POKER.journal)POKER.journal=[];if(!POKER.goals_custom)POKER.goals_custom=[];if(!POKER.lessons_done)POKER.lessons_done={};if(!POKER.exams)POKER.exams=[];if(!POKER.upcoming)POKER.upcoming=[];if(!POKER.hands)POKER.hands=[];if(!POKER.stats)POKER.stats={answered:0,correct:0,streak:0,best:0,by_topic:{},daily:{}};}
+function loadLocal(){try{var r=localStorage.getItem("poker_training_ori_v1");if(r){var j=JSON.parse(r);if(j&&j.stats)POKER=j;}}catch(e){}migrate();}
+function saveLocal(){try{localStorage.setItem("poker_training_ori_v1",JSON.stringify(POKER));}catch(e){}}
+async function loadCloud(){migrate();renderAll();setSync('נשמר מקומית במכשיר ✓');}
+function hasToken(){return !!(localStorage.getItem("lauren_gh_token_v1")||"").trim();}
+function setSync(t){var el=document.getElementById("syncstate");if(el)el.textContent=t;}
+var _saveTimer=null,_saving=false;
+function scheduleSave(){saveLocal();POKER._updated_at=new Date().toISOString();if(_saveTimer)clearTimeout(_saveTimer);_saveTimer=setTimeout(saveCloud,5000);}
+async function saveCloud(){setSync('נשמר מקומית ✓');}
+window.addEventListener("pagehide",function(){if(_saveTimer){clearTimeout(_saveTimer);saveCloud();}});
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden"&&_saveTimer){clearTimeout(_saveTimer);saveCloud();}});
+
+/* ---------- tabs ---------- */
+function go(tab){
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("active",t.dataset.tab===tab);});
+  document.querySelectorAll(".panel").forEach(function(p){p.classList.remove("active");});
+  document.getElementById("p-"+tab).classList.add("active");
+  if(tab==="pushfold"&&!window._pfLoaded){pfNext();window._pfLoaded=true;}
+  if(tab==="spot"&&!window._spotLoaded){spotNext();window._spotLoaded=true;}
+  if(tab==="math"&&!window._mathLoaded){mathNext();window._mathLoaded=true;}
+  if(tab==="learn")renderLearn();
+  if(tab==="career")renderCareer();
+  if(tab==="journal"){renderJournal();renderHands();}
+  if(tab==="exam")renderExam();
+  if(tab==="upcoming")renderUpcoming();
+  if(tab==="goals")renderGoals();
+  if(tab==="overview")renderOverview();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".tab").forEach(function(t){t.onclick=function(){go(t.dataset.tab);};});
+
+/* ============================================================
+   JOURNAL
+   ============================================================ */
+function journalKPIs(){
+  var arr=POKER.journal||[],invested=0,won=0,cashes=0,best=0;
+  arr.forEach(function(e){var inv=(+e.buyin||0)+(+e.reentry||0);invested+=inv;won+=(+e.cash||0);if((+e.cash||0)>0)cashes++;if((+e.cash||0)>best)best=+e.cash;});
+  var played=arr.length,net=won-invested;
+  return {played:played,invested:invested,won:won,net:net,cashes:cashes,best:best,
+    roi:invested>0?100*net/invested:null,itm:played?100*cashes/played:null};
+}
+function journalAdd(){
+  var buyin=parseFloat(document.getElementById("j-buyin").value)||0;
+  var date=document.getElementById("j-date").value||todayKey();
+  if(buyin<=0){toast("הכנס Buy-in");return;}
+  POKER.settings.currency=document.getElementById("j-cur").value||"$";
+  var e={id:"t"+Date.now(),date:date,
+    venue:document.getElementById("j-venue").value.trim(),
+    series:document.getElementById("j-series").value.trim(),
+    buyin:buyin,reentry:parseFloat(document.getElementById("j-reentry").value)||0,
+    cash:parseFloat(document.getElementById("j-cash").value)||0,
+    position:parseInt(document.getElementById("j-pos").value)||null,
+    entrants:parseInt(document.getElementById("j-field").value)||null,
+    notes:document.getElementById("j-notes").value.trim(),created_at:new Date().toISOString()};
+  POKER.journal.push(e);
+  ["j-venue","j-series","j-buyin","j-reentry","j-cash","j-pos","j-field","j-notes"].forEach(function(id){document.getElementById(id).value="";});
+  renderJournal();renderOverview();scheduleSave();toast("הטורניר נשמר ✓");
+}
+function journalDelete(id){
+  if(!confirm("למחוק את רישום הטורניר?"))return;
+  POKER.journal=(POKER.journal||[]).filter(function(e){return e.id!==id;});
+  renderJournal();renderOverview();scheduleSave();
+}
+var netChart=null;
+function renderJournal(){
+  var k=journalKPIs();
+  document.getElementById("j-played").textContent=k.played;
+  var netEl=document.getElementById("j-net");netEl.textContent=money(k.net);netEl.className="n "+(k.net>0?"pos":(k.net<0?"neg":""));
+  document.getElementById("j-roi").textContent=k.roi===null?"—":(Math.round(k.roi)+"%");
+  document.getElementById("j-itm").textContent=k.itm===null?"—":(Math.round(k.itm)+"%");
+  document.getElementById("j-invested").textContent=money(k.invested);
+  document.getElementById("j-won").textContent=money(k.won);
+  document.getElementById("j-best").textContent=money(k.best);
+  document.getElementById("j-cashes").textContent=k.cashes;
+  // table (newest first)
+  var arr=(POKER.journal||[]).slice().sort(function(a,b){return (b.date||"").localeCompare(a.date||"");});
+  var body=document.getElementById("jbody");body.innerHTML="";
+  document.getElementById("jempty").style.display=arr.length?"none":"block";
+  arr.forEach(function(e){
+    var inv=(+e.buyin||0)+(+e.reentry||0),net=(+e.cash||0)-inv;
+    var tr=document.createElement("tr");
+    var place=(e.position&&e.entrants)?(e.position+"/"+e.entrants):(e.position||"—");
+    tr.innerHTML="<td>"+(e.date||"")+"</td><td>"+(esc(e.venue)||"—")+"</td><td>"+(esc(e.series)||"—")+"</td>"+
+      "<td>"+money(inv)+"</td><td>"+money(+e.cash||0)+"</td>"+
+      "<td class='"+(net>0?"net-pos":(net<0?"net-neg":""))+"'>"+money(net)+"</td>"+
+      "<td>"+place+"</td><td><span class='del' onclick=\"journalDelete('"+e.id+"')\">🗑️</span></td>";
+    body.appendChild(tr);
+  });
+  drawNetChart();
+}
+function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function drawNetChart(){
+  var cvs=document.getElementById("netChart");if(!cvs||typeof Chart==="undefined")return;
+  var arr=(POKER.journal||[]).slice().sort(function(a,b){return (a.date||"").localeCompare(b.date||"");});
+  var labels=[],data=[],run=0;
+  arr.forEach(function(e){run+=(+e.cash||0)-((+e.buyin||0)+(+e.reentry||0));labels.push(e.date||"");data.push(Math.round(run));});
+  if(netChart){netChart.destroy();netChart=null;}
+  if(!arr.length){var ctx0=cvs.getContext("2d");ctx0.clearRect(0,0,cvs.width,cvs.height);return;}
+  netChart=new Chart(cvs.getContext("2d"),{type:"line",
+    data:{labels:labels,datasets:[{label:"רווח מצטבר",data:data,borderColor:"#e9c46a",backgroundColor:"rgba(233,196,106,.15)",fill:true,tension:.25,pointRadius:3,pointBackgroundColor:"#e9c46a"}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{color:"#9fc4b4",callback:function(v){return cur()+v;}},grid:{color:"rgba(255,255,255,.06)"}},
+        x:{ticks:{color:"#9fc4b4",maxRotation:0,autoSkip:true},grid:{display:false}}}}});
+}
+
+/* ============================================================
+   GOALS / MILESTONES + JOURNEY LEVEL
+   ============================================================ */
+function milestones(){
+  var s=POKER.stats,acc=s.answered?100*s.correct/s.answered:0;
+  var pf=s.by_topic.pushfold||{a:0,c:0},ic=s.by_topic.icm||{a:0,c:0},k=journalKPIs();
+  var pfp=pf.a>=20?Math.round(100*pf.c/pf.a):0,icp=ic.a>=15?Math.round(100*ic.c/ic.a):0,accp=s.answered>=30?Math.round(acc):0;
+  var ld=lessonsDoneCount();
+  return [
+   {ico:"📚",label:"6 שיעורי יסוד",cur:ld,target:6,unit:""},
+   {ico:"🎓",label:"תרגול ראשון",cur:Math.min(s.answered,1),target:1,unit:""},
+   {ico:"💯",label:"100 ידיים תרגול",cur:s.answered,target:100,unit:""},
+   {ico:"🔥",label:"רצף של 10 נכונות",cur:s.best,target:10,unit:""},
+   {ico:"🎯",label:"דיוק כללי 70% (30+ ידיים)",cur:accp,target:70,unit:"%"},
+   {ico:"♠️",label:"Push/Fold 80% (20+)",cur:pfp,target:80,unit:"%"},
+   {ico:"🧠",label:"ICM 70% (15+)",cur:icp,target:70,unit:"%"},
+   {ico:"📓",label:"תיעוד טורניר ראשון",cur:Math.min(k.played,1),target:1,unit:""},
+   {ico:"🗂️",label:"10 טורנירים ביומן",cur:k.played,target:10,unit:""},
+   {ico:"💰",label:"כניסה ראשונה לכסף (ITM)",cur:Math.min(k.cashes,1),target:1,unit:""},
+   {ico:"📈",label:"ROI חיובי על 10+ טורנירים",cur:(k.played>=10&&k.net>0)?1:0,target:1,unit:""}
+  ];
+}
+var STAGES=[{t:"מתחיל",ico:"🃏",need:0},{t:"לומד",ico:"📘",need:2},{t:"מדייק",ico:"🎯",need:4},{t:"תחרותי",ico:"♠️",need:6},{t:"שוחר גמר",ico:"🏅",need:8},{t:"אלוף",ico:"🏆",need:10}];
+function doneCount(){return milestones().filter(function(m){return m.cur>=m.target;}).length;}
+function currentStage(){var d=doneCount(),idx=0;for(var i=0;i<STAGES.length;i++){if(d>=STAGES[i].need)idx=i;}return {idx:idx,done:d};}
+function renderJourney(){
+  var cs=currentStage(),box=document.getElementById("journey");box.innerHTML="";
+  STAGES.forEach(function(st,i){
+    var d=document.createElement("div");d.className="jstep"+(i<cs.idx?" done":"")+(i===cs.idx?" cur":"");
+    d.innerHTML='<div class="ico">'+st.ico+'</div><div class="nm">'+st.t+'</div>';box.appendChild(d);
+  });
+  var lvl=document.getElementById("hero-level");if(lvl)lvl.textContent=STAGES[cs.idx].ico+" "+STAGES[cs.idx].t;
+  var next=STAGES[cs.idx+1];
+  var fill=document.getElementById("lvlfill"),nx=document.getElementById("lvlnext");
+  if(next){var span=next.need-STAGES[cs.idx].need,prog=cs.done-STAGES[cs.idx].need;
+    fill.style.width=Math.max(0,Math.min(100,100*prog/span))+"%";
+    nx.textContent="עוד "+Math.max(0,next.need-cs.done)+" אבני דרך לדרגת \""+next.t+"\" ("+cs.done+"/"+next.need+")";}
+  else{fill.style.width="100%";nx.textContent="הגעת לדרגה הגבוהה ביותר — אלוף 🏆";}
+}
+function renderGoals(){
+  var list=document.getElementById("goalslist");list.innerHTML="";
+  milestones().forEach(function(m){
+    var done=m.cur>=m.target,pct=Math.max(0,Math.min(100,100*m.cur/m.target));
+    var d=document.createElement("div");d.className="goalcard"+(done?" done":"");
+    d.innerHTML='<div class="gico">'+(done?"✅":m.ico)+'</div><div class="gmid"><div class="gname">'+m.label+'</div>'+
+      '<div class="gtrack"><div style="width:'+pct+'%"></div></div></div>'+
+      '<div class="gval">'+Math.min(m.cur,m.target)+"/"+m.target+m.unit+'</div>';
+    list.appendChild(d);
+  });
+  var cg=document.getElementById("customgoals");cg.innerHTML="";
+  (POKER.goals_custom||[]).forEach(function(g){
+    var d=document.createElement("div");d.className="goalcard"+(g.done?" done":"");
+    d.innerHTML='<div class="gico" style="cursor:pointer" onclick="toggleGoal(\''+g.id+'\')">'+(g.done?"✅":"⬜")+'</div>'+
+      '<div class="gmid"><div class="gname">'+esc(g.text)+'</div></div>'+
+      '<div class="gval"><span class="del" onclick="delGoal(\''+g.id+'\')">🗑️</span></div>';
+    cg.appendChild(d);
+  });
+}
+function addCustomGoal(){var t=document.getElementById("cg-text").value.trim();if(!t)return;
+  POKER.goals_custom.push({id:"g"+Date.now(),text:t,done:false});document.getElementById("cg-text").value="";renderGoals();scheduleSave();}
+function toggleGoal(id){(POKER.goals_custom||[]).forEach(function(g){if(g.id===id)g.done=!g.done;});renderGoals();renderJourney();scheduleSave();}
+function delGoal(id){POKER.goals_custom=(POKER.goals_custom||[]).filter(function(g){return g.id!==id;});renderGoals();scheduleSave();}
+
+/* ---------- overview ---------- */
+function renderOverview(){
+  var s=POKER.stats,acc=s.answered?Math.round(100*s.correct/s.answered):null,k=journalKPIs();
+  document.getElementById("s-acc").textContent=acc===null?"—":acc+"%";
+  document.getElementById("s-best").textContent=s.best||0;
+  document.getElementById("s-played").textContent=k.played;
+  var netEl=document.getElementById("s-net");netEl.textContent=money(k.net);netEl.className="n "+(k.net>0?"pos":(k.net<0?"neg":""));
+  var hs=document.getElementById("hero-streak");if(hs)hs.textContent=s.streak||0;
+  var ha=document.getElementById("hero-acc");if(ha)ha.textContent=(acc===null?"—":acc+"%");
+  var order=["pushfold","icm","mdf","potodds","combos","postflop","bluff"];
+  var box=document.getElementById("topicbars");box.innerHTML="";var worst=null,wp=101;
+  order.forEach(function(t){var rec=s.by_topic[t];if(!rec||rec.a===0)return;
+    var pct=Math.round(100*rec.c/rec.a);if(rec.a>=3&&pct<wp){wp=pct;worst=t;}
+    var row=document.createElement("div");row.className="barrow";
+    row.innerHTML='<div class="name">'+TOPIC_LABELS[t]+'</div><div class="bartrack"><div class="barfill" style="width:'+pct+'%"></div></div><div class="pct">'+pct+'% ('+rec.c+'/'+rec.a+')</div>';
+    box.appendChild(row);});
+  if(box.innerHTML==="")box.innerHTML='<div class="mini">עוד לא תרגלת. בחר מודול והתחל 🙂</div>';
+  var wb=document.getElementById("weakbox");
+  if(worst){wb.style.display="block";wb.innerHTML="⚠️ הנקודה החלשה שלך כרגע: <b>"+TOPIC_LABELS[worst]+"</b> ("+wp+"% הצלחה). כדאי לתרגל אותה יותר.";}else wb.style.display="none";
+  renderDaily();renderJourney();
+}
+function renderAll(){renderOverview();var d=document.getElementById("j-date");if(d&&!d.value)d.value=todayKey();
+  var cs=document.getElementById("j-cur");if(cs)cs.value=cur();
+  if(document.getElementById("p-journal").classList.contains("active"))renderJournal();
+  if(document.getElementById("p-goals").classList.contains("active"))renderGoals();
+  if(document.getElementById("p-learn").classList.contains("active"))renderLearn();
+  if(document.getElementById("p-career").classList.contains("active"))renderCareer();
+  if(document.getElementById("p-exam").classList.contains("active"))renderExam();
+  if(document.getElementById("p-upcoming").classList.contains("active"))renderUpcoming();
+  if(document.getElementById("p-journal").classList.contains("active"))renderHands();}
+function resetStats(){if(!confirm("לאפס את נתוני האימון? (היומן יישמר)"))return;
+  POKER.stats={answered:0,correct:0,streak:0,best:0,by_topic:{},daily:{}};renderOverview();scheduleSave();toast("נתוני האימון אופסו");}
+
+/* ============================================================
+   PUSH / FOLD (ranges verified)
+   ============================================================ */
+function rankVal(c){return {A:14,K:13,Q:12,J:11,T:10}[c]||parseInt(c,10);}
+function rankChar(r){return {14:"A",13:"K",12:"Q",11:"J",10:"T"}[r]||String(r);}
+function canonHand(r1,r2,su){if(r1===r2)return rankChar(r1)+rankChar(r1);var hi=Math.max(r1,r2),lo=Math.min(r1,r2);return rankChar(hi)+rankChar(lo)+(su?"s":"o");}
+function expandToken(tok,set){
+  tok=tok.replace(/-/g,"").replace(/10/g,"T").trim();
+  if(/^([2-9TJQKA])\1\+$/.test(tok)){var r=rankVal(tok[0]);for(var x=r;x<=14;x++)set.add(rankChar(x)+rankChar(x));return;}
+  if(/^([2-9TJQKA])\1$/.test(tok)){set.add(tok);return;}
+  var plus=/\+$/.test(tok),suitedFlag=/s\+?$/.test(tok);
+  var core=tok.replace(/\+$/,"").replace(/s$/,"");if(core.length!==2)return;
+  var hi=rankVal(core[0]),kick=rankVal(core[1]),incs=suitedFlag?[true]:[true,false],topKick=plus?hi-1:kick;
+  for(var k=kick;k<=topKick;k++){if(k===hi)continue;incs.forEach(function(su){set.add(canonHand(hi,k,su));});}
+}
+function buildSet(tokens){var s=new Set();tokens.forEach(function(t){expandToken(t,s);});return s;}
+var PF_RAW={
+ "12-15":{MP:["77+","AQ+","AJs+","KQs"],CO:["66+","AJ+","ATs+","KQs","KJs"],BTN:["55+","AT+","A8s+","KJs+","QJs","JTs"]},
+ "16-22":{MP:["88+","AK","AQs"],CO:["77+","AQ+","AJs"],BTN:["66+","AJ+","ATs+","KQs"]},
+ "23-30":{MP:["99+","AK","AQs"],CO:["99+","AK","AQs"],BTN:["99+","AK","AQs"]}};
+var PF_SETS={};Object.keys(PF_RAW).forEach(function(b){PF_SETS[b]={};Object.keys(PF_RAW[b]).forEach(function(p){PF_SETS[b][p]=buildSet(PF_RAW[b][p]);});});
+var BUCKET_STACKS={"12-15":[12,13,14,15],"16-22":[16,18,20,22],"23-30":[24,26,28,30]};
+var POS_LABEL={MP:"MP (אמצעית)",CO:"Cutoff",BTN:"Button"};
+var SUITS=["♠","♥","♦","♣"],REDSUIT={"♥":1,"♦":1};
+function randHandDisplay(){
+  var ranks=[14,13,12,11,10,9,8,7,6,5,4,3,2],r1=pick(ranks),r2=pick(ranks),suited=false,s1,s2;
+  if(r1===r2){s1=pick(SUITS);do{s2=pick(SUITS);}while(s2===s1);}
+  else{suited=Math.random()<0.30;s1=pick(SUITS);if(suited)s2=s1;else{do{s2=pick(SUITS);}while(s2===s1);}}
+  return {canon:canonHand(r1,r2,suited),
+    disp:'<span class="'+(REDSUIT[s1]?"r":"")+'">'+rankChar(r1)+s1+'</span> <span class="'+(REDSUIT[s2]?"r":"")+'">'+rankChar(r2)+s2+'</span>'};
+}
+var curPF=null;
+function pfNext(){
+  var bucket=pick(Object.keys(PF_RAW)),pos=pick(["MP","CO","BTN"]),stack=pick(BUCKET_STACKS[bucket]),h=randHandDisplay();
+  curPF={bucket:bucket,pos:pos,stack:stack,shove:PF_SETS[bucket][pos].has(h.canon)};
+  document.getElementById("pf-hand").innerHTML=h.disp;
+  document.getElementById("pf-stack").textContent=stack;
+  document.getElementById("pf-pos").textContent=POS_LABEL[pos];
+  document.getElementById("pf-fb").className="feedback";document.getElementById("pf-nextrow").style.display="none";
+}
+function pfAnswer(choseShove){
+  if(!curPF||document.getElementById("pf-nextrow").style.display!=="none")return;
+  var ok=(choseShove===curPF.shove);record("pushfold",ok);
+  var fb=document.getElementById("pf-fb"),verdict=curPF.shove?"שאב 🚀":"קיפול 🚮",rangeTxt=PF_RAW[curPF.bucket][curPF.pos].join(", ");
+  var extra=curPF.bucket==="23-30"?" בעומק הזה לרוב עדיף 3-bet קטן על all-in.":"";
+  fb.className="feedback show "+(ok?"good":"err");
+  fb.innerHTML=(ok?"✅ נכון! ":"❌ לא — התשובה: <b>"+verdict+"</b>")+
+    "<div style='margin-top:8px'>ב-<b>"+curPF.stack+"bb</b> מ-<b>"+POS_LABEL[curPF.pos]+"</b> טווח השאב: <code class='rr'>"+rangeTxt+"</code>."+extra+" 🔸 זכור: chipEV — קרוב לבועה מהדקים.</div>";
+  document.getElementById("pf-nextrow").style.display="";
+}
+document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.getElementById("p-pushfold").classList.contains("active")&&document.getElementById("pf-nextrow").style.display!=="none")pfNext();});
+
+/* ============================================================
+   ICM & SPOT QUIZ
+   ============================================================ */
+var SPOTS=[
+ {c:"icm",q:"<b>Bubble</b> (השולחן האחרון לפני הפרסים). יש לך <b>12bb</b> עם <b>T♠T♥</b>. שחקן עם <b>7bb</b> עושה all-in לפניך. בקאש זה קלל קל. בטורניר?",o:["קלל","קיפול","depends"],a:1,why:"Fold. אם תפסיד אתה יוצא בלי פרס; אם תנצח הרווחת רק ~14bb. ה-ICM אומר שהסיכון גדול בהרבה מהתועלת — ההחלטה ההפוכה מקאש."},
+ {c:"icm",q:"<b>Final Table</b>, 6 שחקנים. יש לך <b>35bb</b>. שחקן עם <b>18bb</b> עושה all-in באמצע, ולך <b>A♣Q♦</b>. בקאש קוראים. בטורניר?",o:["קלל","קיפול","raise"],a:1,why:"Fold. AQo מול טווח all-in של 18bb היא רק מעט מעל 50%, והסיכון הכספי עצום בשולחן גמר. chipEV חיובי אבל $EV שלילי."},
+ {c:"icm",q:"נשארו <b>3 שחקנים</b>. אתה 2nd עם <b>25bb</b>, המנהיג 55bb, ולך <b>A♠9♦</b> ב-BB. ה-SB (השלישי, 20bb) עושה all-in. מה עושים?",o:["קלל","קיפול — ICM","raise"],a:1,why:"Fold. גם אם זה +EV בצ'יפים, זה −EV בכסף: אם תפסיד תישאר עם ~5bb; אם תנצח תהפוך לשני בפער קטן. הקפיצה בפרס לא מצדיקה את הסיכון."},
+ {c:"icm",q:"18 שחקנים, <b>11 בתשלום</b> (קרוב לבועה). יש לך <b>14bb</b> ב-CO עם <b>8♥8♠</b>. שחקן 40bb פותח 2.2bb מ-MP. הכי נכון?",o:["קלל ולראות פלופ","קיפול","3-bet All-in"],a:1,why:"קרוב לבועה עם סטאק בינוני — 88 כאן לרוב Fold. טווח פותח 40bb מ-MP חזק; קלל משאיר אותך OOP, ו-3bet-שאב מסכן את כל הסטאק ממש לפני הכסף."},
+ {c:"icm",q:"אותו מצב אבל מוקדם — <b>50 שחקנים</b> נשארו, <b>8♥8♠</b>, 14bb, פותחים לפניך מ-MP. לעומת קרוב-לבועה?",o:["יותר אגרסיבי (3bet-שאב סביר)","אותו דבר","יותר שמרני"],a:0,why:"רחוק מהבועה אין לחץ ICM כמעט — 88 עם 14bb הוא 3-bet All-in סטנדרטי. אותה יד משנה ערך דרמטית לפי שלב הטורניר. זה לב ה-ICM."},
+ {c:"icm",q:"<b>סאטלייט</b>: N הראשונים מקבלים כרטיס שווה-ערך, ואתה כבר <b>מובטח בנוחות</b> (30bb). מישהו all-in 25bb לתוך <b>A♠A♥</b> שלך ב-BB. מה עושים?",o:["קלל — אלות","קיפול — כבר בפנים","raise"],a:1,why:"בסאטלייט, אם אתה כבר מובטח — כל צ'יפ נוסף כמעט חסר ערך, אבל הפסד מסכן את הכרטיס. מקפלים אפילו AA. המצב הכי קיצוני של ICM."},
+ {c:"icm",q:"<b>Bubble</b>, אתה <b>צ'יפ-לידר</b>. סטאק קצר all-in ולך <b>K♠Q♠</b> ב-BB, מכסה בקלות. מה עושים?",o:["קלל — לוחץ, סיכון קטן","קיפול","depends"],a:0,why:"כצ'יפ-לידר הסיכון היחסי קטן וניצחון מחסל יריב. KQs מול טווח שאב רחב של קצר = קלל קל. כאן ICM דווקא מעודד ללחוץ — בניגוד לסטאק בינוני."},
+ {c:"pushfold",q:"טורניר מאוחר. <b>6bb</b> ב-<b>UTG</b>, היד <b>9♦8♦</b>. מה עושים?",o:["All-in","קיפול","לימפ"],a:0,why:"בסטאק 5-7bb, 98s שאב סטנדרטי גם מ-UTG. (בעומק 10-15bb זה Fold מ-UTG.) הבעיה בד\"כ שהיריב קורא רחב מדי — לא השאב שלך."},
+ {c:"pushfold",q:"<b>10bb</b> ב-<b>Button</b>, מקפלים אליך, <b>K♣9♦</b>. שאב או קיפול?",o:["All-in","קיפול","min-raise"],a:0,why:"טווח השאב מה-BTN ב-10bb רחב מאוד (~40-50%). K9o בפנים — לוקח בליינדים בתדירות גבוהה."},
+ {c:"pushfold",q:"<b>25bb</b>, פתחו לפניך מ-CO ואתה ב-BTN עם <b>A♣J♦</b>. הכי טוב בד\"כ?",o:["3-bet All-in או קיפול","קלל בלבד","min-raise/fold"],a:0,why:"ב-25bb, כשפתחו לפניך, ה-Call הכי מסוכן (בלי אופציות אחרי הפלופ). AJo — או 3-bet-שאב או קיפול. זו הטעות הנפוצה של מנוסים."},
+ {c:"postflop",q:"פתחת BTN, ה-BB קילל. פלופ <b>A♠7♦2♣</b> (יבש). ה-BB check. אתה ה-PFR. הכי GTO?",o:["c-bet קטן (~⅓) בתדירות גבוהה","c-bet פוט","check back"],a:0,why:"בורד A-high יבש — יתרון טווח ו-nut ברור. c-bet קטן על כמעט כל הטווח: זול, לוקח פוטים, מכחיש equity."},
+ {c:"postflop",q:"פתחת מ-UTG, ה-BB קילל. פלופ <b>9♥7♥6♠</b> (רטוב). ה-BB check. נכון יותר?",o:["check בתדירות גבוהה","c-bet גדול על כל הטווח","all-in"],a:0,why:"הבורד פוגע בטווח ה-BB יותר מבטווח פתיחת UTG. מוותרים על יתרון הטווח — בודקים הרבה."},
+ {c:"bluff",q:"ריבר, הבורד השלים <b>שלושה לבבות</b>. אין לך זוג אבל אתה מחזיק <b>A♥</b> (חוסם פלאש-גבוה). GTO?",o:["בלוף — חוסם את הצבע","ויתור","קלל"],a:0,why:"עקרון החסימות: A♥ מפחית קומבינציות פלאש חזק אצל היריב → הוא מקפל יותר. הידיים הכי טובות לבלף."},
+ {c:"bluff",q:"היריב מהמר <b>פוט מלא</b> על הריבר. לפי MDF צריך להגן ~50%, והיד שלך <b>bluff-catcher</b> בתחתית. GTO?",o:["מערבב (indifferent)","תמיד קלל","תמיד קיפול"],a:0,why:"בנקודת האיזון ה-bluff-catcher אדיש (EV קלל = EV קיפול). GTO מערבב בתדירות ששומרת אותך בלתי-ניתן-לניצול."},
+ {c:"bluff",q:"היריב מהמר <b>הימור-יתר 2× פוט</b> על הריבר. כמה עליך להגן (MDF)?",o:["~33%","~50%","~67%"],a:0,why:"MDF = Pot/(Pot+Bet) = 100/300 = 33%. הימור גדול → מגנים על פחות. אל תיפול למלכודת 'להגן יותר מדי'."}
+];
+SPOTS=SPOTS.concat([
+ {c:"icm",q:"<b>שולחן גמר</b> של 6, קפיצות פרס ענקיות. אתה 2nd עם 22bb, הצ'יפ-לידר (מכסה אותך) עושה open-shove מה-SB לתוך ה-BB שלך, ולך <b>J♠J♦</b>. הכי נכון תחת ICM?",o:["קלל — JJ חזק","נוטה לקיפול/מיקס — bubble factor מקסימלי מול מי שמכסה","raise"],a:1,why:"מול היריב היחיד שמכסה אותך בשולחן גמר, ה-bubble factor הכי גבוה. JJ עדיין +chipEV מול open-shove רחב, אבל תחת ICM עם קפיצות גדולות זו לרוב זריקה/מיקס — לא רוצים לבוסט את מי שיכול לחסל אותנו."},
+ {c:"icm",q:"היי-רולר <b>$25K</b> על הבועה. פותחים לפניך ואתה ב-CO עם <b>A♠Q♠</b> ו-25bb. הכי טוב בד\'\'כ?",o:["3-bet לא-all-in עם תוכנית","flat call","קיפול"],a:0,why:"בהיי-רולר על הבועה עם 25bb, AQs היא יד 3-bet מצוינת (fold equity + playability). flat משאיר OOP; קיפול פסיבי מדי מול לחץ בועה שדווקא מתגמל אגרסיביות ממוקדת."},
+ {c:"icm",q:"טורניר <b>PKO</b> (באונטי מתקדם). קצר שמכסה בדיוק את הבאונטי שלך שואב 9bb ל-BB שלך, ולך <b>K♦T♦</b>. מול טורניר רגיל —",o:["מקללים רחב יותר — ערך הבאונטי מוסיף EV","אותו דבר","צר יותר"],a:0,why:"ב-PKO ערך הבאונטי מצדיק קריאות רחבות מ-chipEV/ICM רגיל — הבאונטי הוא כסף שנכנס מיד. KTs מול שאב קצר עם באונטי = קלל קל."},
+ {c:"icm",q:"<b>סאטלייט</b> ל-Main Event (כרטיסים שווים), אתה מובטח בנוחות. שואבים 20bb ל-<b>A♠K♥</b> שלך ואתה מכסה. מה עושים?",o:["קלל — AK","קיפול — לשמור על הכרטיס","raise"],a:1,why:"עיקרון סאטלייט: אם כבר בפנים, אין ערך בצ'יפים נוספים ויש סיכון לכרטיס. מקפלים גם AK — משמעת סאטלייט טהורה."},
+ {c:"bluff",q:"ריבר. אתה בנקודת <b>מיקס</b> שבה הסולבר משחק ~50% קלל / 50% קיפול עם היד שלך. מה עושה שחקן ברמה גבוהה?",o:["מערבב לפי randomizer/חוסם — לא דפוס קבוע","תמיד קלל","תמיד קיפול"],a:0,why:"בנקודת מיקס, GTO מערבב לפי מנגנון אקראי (שעון/חוסם ספציפי). 'תמיד' יוצר דפוס שיריב חזק ינצל. שמירה על התדירות = בלתי-ניתן-לניצול."}
+]);
+var spotCat="all",spotPool=[],spotIdx=0,curSpot=null;
+document.querySelectorAll("#spotchips .chip").forEach(function(c){c.onclick=function(){document.querySelectorAll("#spotchips .chip").forEach(function(x){x.classList.remove("active");});c.classList.add("active");spotCat=c.dataset.c;buildSpotPool();spotNext();};});
+function buildSpotPool(){spotPool=SPOTS.map(function(_,i){return i;}).filter(function(i){return spotCat==="all"||SPOTS[i].c===spotCat;});for(var i=spotPool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=spotPool[i];spotPool[i]=spotPool[j];spotPool[j]=t;}spotIdx=0;}
+function spotNext(){
+  if(!spotPool.length)buildSpotPool();if(spotIdx>=spotPool.length)buildSpotPool();
+  curSpot=SPOTS[spotPool[spotIdx]];spotIdx++;
+  document.getElementById("sp-cat").textContent=TOPIC_LABELS[curSpot.c]||curSpot.c;
+  document.getElementById("sp-q").innerHTML=curSpot.q;
+  var box=document.getElementById("sp-opts");box.innerHTML="";
+  curSpot.o.forEach(function(txt,i){var d=document.createElement("div");d.className="opt";d.innerHTML=txt;d.onclick=function(){spotAnswer(i);};box.appendChild(d);});
+  document.getElementById("sp-fb").className="feedback";document.getElementById("sp-nextrow").style.display="none";
+}
+function spotAnswer(i){
+  if(document.getElementById("sp-nextrow").style.display!=="none")return;
+  var ok=(i===curSpot.a);record(curSpot.c,ok);
+  var opts=document.getElementById("sp-opts").children;
+  for(var k=0;k<opts.length;k++){if(k===curSpot.a)opts[k].classList.add("correct");else if(k===i)opts[k].classList.add("wrong");else opts[k].classList.add("dim");opts[k].onclick=null;}
+  var fb=document.getElementById("sp-fb");fb.className="feedback show "+(ok?"good":"err");
+  fb.innerHTML=(ok?"✅ נכון!":"❌ לא — התשובה: <b>"+curSpot.o[curSpot.a]+"</b>")+"<div style='margin-top:8px'>"+curSpot.why+"</div>";
+  document.getElementById("sp-nextrow").style.display="";
+}
+
+/* ============================================================
+   MATH DRILLS (verified)
+   ============================================================ */
+var mathMode="mixed";
+document.querySelectorAll("#mathchips .chip").forEach(function(c){c.onclick=function(){document.querySelectorAll("#mathchips .chip").forEach(function(x){x.classList.remove("active");});c.classList.add("active");mathMode=c.dataset.m;mathNext();};});
+var POTS=[60,80,100,120,150,180,200,240];
+var FRACS=[{f:0.33,txt:"⅓ פוט"},{f:0.5,txt:"½ פוט"},{f:0.66,txt:"⅔ פוט"},{f:0.75,txt:"¾ פוט"},{f:1,txt:"פוט מלא"},{f:1.25,txt:"1.25× פוט"},{f:1.5,txt:"1.5× פוט"},{f:2,txt:"2× פוט"}];
+var VALUES=[6,8,9,12,15,16,18,20,24],curMath=null;
+function genMath(mode){
+  if(mode==="mixed")mode=pick(["mdf","potodds","combos"]);
+  var pot=pick(POTS),fr=pick(FRACS),bet=Math.round(pot*fr.f);
+  if(mode==="mdf"){var ans=100*pot/(pot+bet);
+    return {topic:"mdf",unit:"%",tol:1.5,ans:ans,q:"הקופה <b>$"+pot+"</b>. היריב מהמר <b>$"+bet+"</b> ("+fr.txt+"). כמה אחוז מהטווח חובה להגן?",formula:"MDF = Pot/(Pot+Bet) = "+pot+"/"+(pot+bet)+" = "+ans.toFixed(1)+"%",why:"אם תגן פחות — בלוף בגודל הזה מרוויח אוטומטית. הימור גדול → מגנים פחות."};}
+  if(mode==="potodds"){var pn=pot+bet,call=bet,a=100*call/(pn+call);
+    return {topic:"potodds",unit:"%",tol:1.5,ans:a,q:"בקופה עכשיו <b>$"+pn+"</b> (כולל הימור היריב). לקלל אתה משלם <b>$"+call+"</b>. כמה אקוויטי צריך שהקלל יהיה רווחי בדיוק?",formula:"Equity = Call/(Pot+Call) = "+call+"/"+(pn+call)+" = "+a.toFixed(1)+"%",why:"סף האיזון: יותר מזה — קלל רווחי; פחות — זריקה."};}
+  var V=pick(VALUES),bl=V*bet/(pot+bet),ans2=Math.round(bl);
+  return {topic:"combos",unit:"קומבינציות",tol:0.6,ans:ans2,integer:true,q:"יש לך <b>"+V+"</b> קומבינציות ערך שאיתן אתה מהמר על הריבר בגודל <b>"+fr.txt+"</b>. כמה קומבינציות בלוף לאיזון GTO?",formula:"Bluffs = Value × Bet/(Pot+Bet) = "+V+"×"+bet+"/"+(pot+bet)+" = "+bl.toFixed(1)+" ≈ "+ans2,why:"היחס ערך:בלוף בפוט מלא = 2:1, בחצי פוט 3:1. הימור גדול → יותר בלופים."};
+}
+function mathNext(){curMath=genMath(mathMode);
+  document.getElementById("m-topic").textContent=TOPIC_LABELS[curMath.topic];
+  document.getElementById("m-q").innerHTML=curMath.q;document.getElementById("m-unit").textContent=curMath.unit;
+  var inp=document.getElementById("m-input");inp.value="";inp.disabled=false;inp.focus();
+  document.getElementById("m-check").style.display="";document.getElementById("m-next").style.display="none";document.getElementById("m-fb").className="feedback";}
+function mathCheck(){
+  if(!curMath)return;var raw=document.getElementById("m-input").value;if(raw===""){toast("הכנס תשובה");return;}
+  var val=parseFloat(raw),ok=Math.abs(val-curMath.ans)<=curMath.tol;record(curMath.topic,ok);
+  var fb=document.getElementById("m-fb"),at=curMath.integer?curMath.ans:curMath.ans.toFixed(1)+"%";
+  fb.className="feedback show "+(ok?"good":"err");
+  fb.innerHTML=(ok?"✅ נכון! ":"❌ לא מדויק. הנכון: <b>"+at+"</b>")+'<div class="formula">'+curMath.formula+'</div><div style="margin-top:8px">'+curMath.why+'</div>';
+  document.getElementById("m-input").disabled=true;document.getElementById("m-check").style.display="none";document.getElementById("m-next").style.display="";document.getElementById("m-next").focus();}
+document.getElementById("m-input").addEventListener("keydown",function(e){if(e.key==="Enter")mathCheck();});
+document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.getElementById("p-math").classList.contains("active")&&document.getElementById("m-next").style.display!=="none")mathNext();});
+
+/* ---------- toast ---------- */
+var _tt=null;function toast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");if(_tt)clearTimeout(_tt);_tt=setTimeout(function(){t.classList.remove("show");},2200);}
+
+/* ============================================================
+   CAREER — real CardPlayer history (cashes only)
+   ============================================================ */
+var CAREER_OFFICIAL={earnings:2285096,cashes:29,titles:6};
+var CAREER=[
+ {d:"2026-07-11",e:"$1,500 The Closer · WSOP 🏆",b:1500,p:1,w:582800},
+ {d:"2024-06-17",e:"$2,200 Mystery Bounty · Wynn 🏆",b:2200,p:1,w:460570},
+ {d:"2023-01-30",e:"$25,000 PSPC · PCA Bahamas",b:25000,p:41,w:70700},
+ {d:"2023-04-30",e:"€5,300 EPT Main · Monte Carlo",b:5300,p:11,w:69745},
+ {d:"2019-07-03",e:"$10,000 Main Event · WSOP",b:10000,p:94,w:69636},
+ {d:"2013-12-12",e:"€5,300 EPT Main · Prague",b:5300,p:12,w:67421},
+ {d:"2021-11-15",e:"$1,500 Event #75 · WSOP",b:1500,p:5,w:66447},
+ {d:"2022-09-10",e:"$400 Kick-Off ONLINE · WSOP 🏆",b:400,p:1,w:58491},
+ {d:"2025-06-16",e:"$3,000 6-Handed · WSOP",b:3000,p:9,w:55882},
+ {d:"2019-06-23",e:"$800 Deepstack 8-Handed · WSOP",b:800,p:8,w:41300},
+ {d:"2022-02-05",e:"€1,000 UDSO High Roller · Paris 🏆",b:1100,p:1,w:40094},
+ {d:"2022-10-21",e:"$600 UltimateStack · Venetian",b:600,p:2,w:28712},
+ {d:"2024-12-14",e:"$9,800 WPT World Championship · Wynn",b:10400,p:162,w:25000},
+ {d:"2026-07-02",e:"$10,000 Main Event · WSOP",b:10000,p:756,w:25000},
+ {d:"2014-01-16",e:"$800 Winterfest · Merit Cyprus 🏆",b:880,p:1,w:24975},
+ {d:"2023-09-04",e:"€445 EPM Main · Rozvadov",b:490,p:10,w:20615},
+ {d:"2022-01-09",e:"€600 WSOPC Fiftystack · Rozvadov",b:660,p:3,w:19945},
+ {d:"2022-05-28",e:"€2,000 Eureka High Roller · Rozvadov",b:2200,p:6,w:18762},
+ {d:"2021-11-08",e:"$1,000 Little One One Drop · WSOP",b:1000,p:18,w:18178},
+ {d:"2023-06-07",e:"$2,500 Freezeout · WSOP",b:2500,p:17,w:17423},
+ {d:"2017-07-08",e:"$10,000 Main Event · WSOP",b:10000,p:950,w:16024},
+ {d:"2013-12-11",e:"€250 PLO Double Chance · EPT Prague 🏆",b:275,p:1,w:14526},
+ {d:"2022-05-22",e:"€1,000 High Roller 8-Max · PokerFest",b:1100,p:2,w:14258},
+ {d:"2020-03-05",e:"€320 KENTA Monsterstack · Rozvadov",b:350,p:6,w:13131},
+ {d:"2025-06-10",e:"$3,000 Freezeout · WSOP",b:3000,p:31,w:12920},
+ {d:"2021-10-05",e:"$1,000 Super Turbo Bounty · WSOP",b:1000,p:11,w:10980},
+ {d:"2025-06-18",e:"$1,500 Millionaire Maker · WSOP",b:1500,p:200,w:10200},
+ {d:"2015-07-05",e:"$10,000 Main Event · WSOP",b:10000,p:777,w:15000},
+ {d:"2014-08-24",e:"€1,000 EPT Barcelona",b:1100,p:14,w:8671}
+];
+var careerChart=null;
+function renderCareer(){
+  var earn=0,best=0,bestP=9999,ft=0,wins=0;
+  CAREER.forEach(function(r){earn+=r.w;if(r.w>best)best=r.w;if(r.p<bestP)bestP=r.p;if(r.p<=9)ft++;if(r.p===1)wins++;});
+  document.getElementById("c-earn").textContent="$"+CAREER_OFFICIAL.earnings.toLocaleString("en-US");
+  document.getElementById("c-cashes").textContent=CAREER.length;
+  document.getElementById("c-titles").textContent=wins;
+  document.getElementById("c-best").textContent="$"+best.toLocaleString("en-US");
+  document.getElementById("c-insight").innerHTML="<b>$2,285,096 ברווחים · תואר WSOP</b> (The Closer, $582,800) · מקום 10 ברשימת ההכנסות של ישראל. ברמה הזו הקצה נמצא בנקודות הקטנות: ICM מדויק בשולחנות גמר והיי-רולרים, Push/Fold ללא דליפות, ומשמעת ברגעים הגדולים. המערכת הזו שומרת על החוד — ומכוונת לתואר הגדול הבא.";
+  // top cashes
+  var top=CAREER.slice().sort(function(a,b){return b.w-a.w;}).slice(0,10);
+  var tb=document.getElementById("c-top");tb.innerHTML="";
+  top.forEach(function(r){var tr=document.createElement("tr");
+    tr.innerHTML="<td>"+r.d+"</td><td>"+r.e+"</td><td>$"+r.b.toLocaleString("en-US")+"</td><td>"+(r.p===bestP?"<b style='color:var(--gold)'>"+r.p+"</b>":r.p)+"</td><td class='net-pos'>$"+r.w.toLocaleString("en-US")+"</td>";
+    tb.appendChild(tr);});
+  // by year chart
+  var by={};CAREER.forEach(function(r){var y=r.d.slice(0,4);by[y]=(by[y]||0)+r.w;});
+  var yrs=Object.keys(by).sort();
+  if(typeof Chart!=="undefined"){
+    if(careerChart){careerChart.destroy();careerChart=null;}
+    careerChart=new Chart(document.getElementById("careerChart").getContext("2d"),{type:"bar",
+      data:{labels:yrs,datasets:[{label:"רווחים",data:yrs.map(function(y){return Math.round(by[y]);}),backgroundColor:"rgba(233,196,106,.65)",borderColor:"#e9c46a",borderWidth:1}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{y:{ticks:{color:"#9fc4b4",callback:function(v){return "$"+(v/1000)+"k";}},grid:{color:"rgba(255,255,255,.06)"}},x:{ticks:{color:"#9fc4b4"},grid:{display:false}}}}});
+  }
+  // career dream goals
+  var cg=document.getElementById("c-goals");
+  var goals=[
+   {ico:"🏆",t:"התואר הגדול הבא — WSOP/EPT Main"},
+   {ico:"💵",t:"לשבור את השיא: זכייה מעל $582,800"},
+   {ico:"🌍",t:"שולחן גמר High Roller בין-לאומי"},
+   {ico:"💎",t:"חציית $2.5M ברווחים בקריירה"}
+  ];
+  cg.innerHTML=goals.map(function(g){return '<div class="goalcard"><div class="gico">'+g.ico+'</div><div class="gmid"><div class="gname">'+g.t+'</div></div></div>';}).join("");
+}
+
+/* ============================================================
+   LEARN / ACADEMY — teach before practice
+   ============================================================ */
+var LESSONS=[
+ {id:"gto",ico:"🧠",mins:2,title:"מה זה GTO — ולמה אתה צריך אותו",
+  body:"GTO (Game Theory Optimal) היא אסטרטגיה מאוזנת שאי אפשר לנצל — לא משנה מה היריב עושה, הוא לא מרוויח נגדך לאורך זמן. החדשות הטובות: בטורנירים אתה לא צריך GTO מושלם, אתה צריך את החלקים שמחזירים הכי הרבה — <b>Preflop נכון</b> ו-<b>ICM</b>. קודם מבינים את הבסיס, אחר כך מתרגלים אותו עד שהוא הופך לאינטואיציה.",
+  take:["GTO = אסטרטגיה שלא ניתנת לניצול","בטורניר מתמקדים ב-Preflop + ICM","לא צריך מושלם — צריך עקבי"],cta:{tab:"spot",label:"קדימה לספוטים"}},
+ {id:"icm",ico:"💰",mins:3,title:"ICM — צ'יפים הם לא כסף",
+  body:"בקאש כל צ'יפ שווה אותו דבר. בטורניר — לא. ככל שמתקרבים לפרסים, כל צ'יפ שאתה מסכן שווה יותר כסף ממה שאתה יכול לזכות. דוגמה: 4 שחקנים, פרסים 1000/500/300/200. אם לכולם 10,000 צ'יפ — ה-EV שלך בכסף הוא 500$. עכשיו אם לך 25,000 ולכל אחד מהשאר 5,000 — ה-EV שלך כ-850-900$, למרות שיש לך 'רק' חצי מהצ'יפים. <b>המסקנה:</b> סטאק גדול → שחק שמרן (כל צ'יפ יקר). סטאק קצר → אגרסיבי (אתה כבר מת אם לא תפעל).",
+  take:["צ'יפים ≠ כסף","סטאק גדול = לשחק שמרן","סטאק קצר = לשחק אגרסיבי"],cta:{tab:"spot",label:"תרגל ICM"}},
+ {id:"stack",ico:"📏",mins:2,title:"עומק סטאק — למה bb קובע הכל",
+  body:"כמה בליינדים (bb) יש לך זה הנתון הכי חשוב לפני כל החלטה. <b>100bb</b> — עמוק, הרבה פוסטפלופ. <b>40bb</b> — עדיין גמיש. <b>20-30bb</b> — אזור ה-3bet/fold. <b>15bb ומטה</b> — Push/Fold טהור. אותה יד משוחקת אחרת לגמרי לפי העומק: 88 עם 14bb זה שאב, עם 40bb זה קלל/רייז.",
+  take:["bb קובע את כל ההחלטה","15bb ומטה = Push/Fold","אותה יד = החלטה אחרת לפי עומק"],cta:{tab:"pushfold",label:"תרגל Push/Fold"}},
+ {id:"pf",ico:"♠️",mins:3,title:"Push/Fold — הכלי הכי חשוב בטורניר",
+  body:"עם 15bb ומטה, ברוב המצבים ההחלטה היא שאב-או-קיפול. יש טווחים מדויקים לפי סטאק ופוזיציה (הטבלה המלאה בלשונית '📖 מדריך'). ככל שהסטאק קטן יותר — דוחפים יותר ידיים. ככל שהפוזיציה מאוחרת יותר (Button) — רחב יותר; מ-MP צר. זה הכלי שהכי משפיע על התוצאות שלך.",
+  take:["≤15bb: שאב או קיפול","סטאק קצר יותר → טווח רחב יותר","BTN רחב, MP צר"],cta:{tab:"pushfold",label:"תרגל עכשיו"}},
+ {id:"zone",ico:"🎯",mins:3,title:"אזור 20-30bb — איפה מנוסים טועים",
+  body:"20-30bb הוא האזור שהכי כואב לשחקנים מנוסים. הטעות הנפוצה: לקרוא 3-bet עם AJ / KQ / 88-99 במקום 4bet-שאב או קיפול. <b>הכלל:</b> אם פתחו לפניך — ברוב המקרים קיפול או 3-bet All-in. ה-Call הכי מסוכן (משחק OOP בלי אופציות אחרי הפלופ). כשאתה פותח — היה אגרסיבי בגניבות מ-CO / BTN / SB.",
+  take:["אל תעשה flat-call ב-25bb","קיפול או 3bet-שאב","גנוב הרבה מ-CO/BTN"],cta:{tab:"spot",label:"ספוטים"}},
+ {id:"open",ico:"📋",mins:2,title:"טווחי פתיחה לפי שלב הטורניר",
+  body:"ככל שמתקדמים בטורניר — מצמצמים טווחים ב-30-40%. <b>מוקדם</b> (40+ שחקנים): CO ~25%, BTN 40-45%. <b>קרוב לבועה:</b> CO 12-14%, BTN 18-22%. <b>Final Table:</b> CO 10-12%, BTN 15-18%. הטבלה המלאה בלשונית '📖 מדריך'.",
+  take:["מאוחר יותר = צר יותר","BTN תמיד רחב מ-CO","קרוב לבועה = הידוק חד"],cta:{tab:"ref",label:"לטבלאות"}},
+ {id:"icmspots",ico:"🧩",mins:3,title:"ICM בפועל — מתי לקפל AK / TT / AQ",
+  body:"3 מצבים קלאסיים שקורים רק בטורניר: <b>(1)</b> בבועה, 12bb עם TT מול שאב 7bb — Fold (בקאש קלל קל). <b>(2)</b> שולחן גמר, 35bb עם AQ מול שאב 18bb — Fold. <b>(3)</b> נשארו 3, A9 ב-BB מול שאב — Fold גם אם +EV בצ'יפים. השאלה שתמיד תשאל אחרי כל יד: <i>'האם זו אותה החלטה בקאש? אם לא — למה ICM שינה אותה?'</i>",
+  take:["בבועה מקפלים גם ידיים חזקות","chipEV חיובי ≠ $EV חיובי","תמיד לשאול: קאש מול טורניר?"],cta:{tab:"spot",label:"תרגל ICM"}},
+ {id:"math",ico:"🧮",mins:3,title:"המתמטיקה — MDF, Pot Odds, איזון בלוף",
+  body:"שלוש נוסחאות שמנחות איזון: <b>MDF</b> (כמה להגן) = Pot/(Pot+Bet). <b>Pot Odds</b> (כמה אקוויטי צריך לקלל) = Call/(Pot+Call). <b>יחס ערך:בלוף</b> — בהימור פוט מלא 2:1, בחצי פוט 3:1. לא צריך לחשב חי בשולחן — צריך שהמספרים יהיו אינטואיציה.",
+  take:["MDF = Pot/(Pot+Bet)","הימור גדול → מגנים פחות","פוט מלא = 2:1 ערך:בלוף"],cta:{tab:"math",label:"תרגל מתמטיקה"}},
+ {id:"blockers",ico:"🃏",mins:2,title:"חסימות ובלופים על הריבר",
+  body:"בלוף טוב אינו אקראי — הוא נשען על חסימות. אם אתה מחזיק את ה-A של הצבע, יש פחות פלאשים חזקים ביד היריב → הוא מקפל יותר → הבלוף משתלם. על הריבר, בלי ערך show-down, בלוף מאוזן הוא הדרך היחידה לנצח את הפוט.",
+  take:["בלוף עם חסימות לידיים החזקות","אזן ערך מול בלוף","בלי show-down → בלוף מאוזן"],cta:{tab:"spot",label:"ספוטים"}},
+ {id:"mindset",ico:"🧘",mins:3,title:"מיינדסט — המשחק המנטלי",
+  body:"המשחק המנטלי מכריע לא פחות מהקלפים. <b>שחק החלטות, לא תוצאות:</b> יד בודדת היא מזל; החלטה נכונה שחוזרת אלף פעם היא תוצאה. <b>נהל Tilt:</b> אחרי bad-beat — קח נשימה, אל תשנה סגנון. <b>סבלנות אינה פסיביות:</b> היא לחכות לרגע שבו הקצה שלך גדול. <b>Bankroll:</b> שחק רק בטורנירים שאתה יכול להרשות לעצמך — כדי שכל החלטה תהיה נקייה מפחד.",
+  take:["שחק החלטות, לא תוצאות","אל תשנה סגנון אחרי bad-beat","סבלנות = לחכות לקצה","Bankroll נכון = החלטות נקיות"],cta:{tab:"overview",label:"חזרה לבית"}}
+];
+function lessonsDoneCount(){var d=POKER.lessons_done||{},n=0;LESSONS.forEach(function(l){if(d[l.id])n++;});return n;}
+function toggleLesson(id){POKER.lessons_done=POKER.lessons_done||{};POKER.lessons_done[id]=!POKER.lessons_done[id];renderLearn();renderOverview();scheduleSave();}
+function goLesson(tab){go(tab);}
+function renderLearn(){
+  var list=document.getElementById("learnlist");if(!list)return;list.innerHTML="";
+  var done=POKER.lessons_done||{};
+  LESSONS.forEach(function(l,i){
+    var isD=!!done[l.id];
+    var takes=l.take.map(function(t){return "<li>"+t+"</li>";}).join("");
+    var d=document.createElement("div");d.className="lesson"+(isD?" done":"");
+    d.innerHTML='<details><summary><span class="lico">'+l.ico+'</span><b>'+(i+1)+'. '+l.title+'</b>'+
+      '<span class="lmin">⏱ '+l.mins+' דק\'</span>'+(isD?'<span class="ldone">✓</span>':'')+'</summary>'+
+      '<div class="lbody">'+l.body+
+      '<div class="ltake"><b>מה לזכור:</b><ul>'+takes+'</ul></div>'+
+      '<div class="row-actions">'+
+      '<button class="btn ghost" onclick="toggleLesson(\''+l.id+'\')">'+(isD?'↩ בטל סימון':'✓ סמן כנלמד')+'</button>'+
+      '<button class="btn primary" onclick="goLesson(\''+l.cta.tab+'\')">'+l.cta.label+' →</button>'+
+      '</div></div></details>';
+    list.appendChild(d);
+  });
+  var n=lessonsDoneCount();
+  var pr=document.getElementById("learnprog");if(pr)pr.textContent=n+"/"+LESSONS.length+" שיעורים";
+  var fl=document.getElementById("learnfill");if(fl)fl.style.width=Math.round(100*n/LESSONS.length)+"%";
+}
+
+/* ============================================================
+   MINI-QUIZ ENGINE (shared by Warm-up + Exam) + DAILY + HANDS + UPCOMING
+   ============================================================ */
+var DAILY_TARGET=18;
+function v(id){return (document.getElementById(id).value||"").trim();}
+function pfItem(){var b=pick(Object.keys(PF_RAW)),ps=pick(["MP","CO","BTN"]),st=pick(BUCKET_STACKS[b]),h=randHandDisplay();var sh=PF_SETS[b][ps].has(h.canon);
+ return {topic:"pushfold",kind:"choice",prompt:"שאב או קיפול?",
+  sub:'<div class="handbig" style="font-size:34px;margin:2px 0">'+h.disp+'</div><div class="mini" style="text-align:center">'+st+'bb · '+POS_LABEL[ps]+'</div>',
+  options:["🚀 שאב","🚮 קיפול"],correct:sh?0:1,explain:"ב-"+st+"bb מ-"+POS_LABEL[ps]+" טווח השאב: "+PF_RAW[b][ps].join(", ")};}
+function spotItem(cats){var pool=SPOTS.filter(function(x){return !cats||cats.indexOf(x.c)>=0;});var sp=pick(pool);
+ return {topic:sp.c,kind:"choice",prompt:sp.q,sub:"",options:sp.o,correct:sp.a,explain:sp.why};}
+function mathItem(){var m=genMath("mixed");return {topic:m.topic,kind:"num",prompt:m.q,answer:m.ans,tol:m.tol,unit:m.unit,integer:m.integer,explain:m.formula+" — "+m.why};}
+var QZ={items:[],i:0,score:0,answers:[],el:null,reveal:true,onDone:null};
+function quizStart(el,items,reveal,onDone){QZ={items:items,i:0,score:0,answers:[],el:el,reveal:reveal,onDone:onDone};quizRender();}
+function quizRender(){
+ var q=QZ.items[QZ.i],el=QZ.el;
+ var html='<div class="mini">שאלה '+(QZ.i+1)+' מתוך '+QZ.items.length+'</div>'+
+   '<div class="qbox" style="min-height:auto">'+q.prompt+'</div>'+(q.sub||"");
+ if(q.kind==="choice"){html+='<div class="opts" id="qz-opts"></div>';}
+ else{html+='<div class="numrow"><input class="num" id="qz-num" type="number" step="0.1" placeholder="?"><span class="unit">'+q.unit+'</span><button class="btn primary" onclick="quizNum()">אישור</button></div>';}
+ html+='<div class="feedback" id="qz-fb"></div><div class="row-actions" id="qz-next" style="display:none"><button class="btn primary" onclick="quizNext()">'+((QZ.i+1<QZ.items.length)?"הבא ←":"סיום ✓")+'</button></div>';
+ el.innerHTML=html;
+ if(q.kind==="choice"){var ob=document.getElementById("qz-opts");q.options.forEach(function(t,idx){var d=document.createElement("div");d.className="opt";d.innerHTML=t;d.onclick=function(){quizChoice(idx);};ob.appendChild(d);});}
+ else{var n=document.getElementById("qz-num");if(n)n.focus();}
+}
+function quizGrade(ok,q){QZ.answers.push({q:q,ok:ok});if(ok)QZ.score++;record(q.topic,ok);}
+function quizChoice(idx){if(document.getElementById("qz-next").style.display!=="none")return;var q=QZ.items[QZ.i],ok=idx===q.correct;quizGrade(ok,q);
+ var opts=document.getElementById("qz-opts").children;
+ for(var k=0;k<opts.length;k++){opts[k].onclick=null;if(QZ.reveal){if(k===q.correct)opts[k].classList.add("correct");else if(k===idx)opts[k].classList.add("wrong");else opts[k].classList.add("dim");}else if(k===idx){opts[k].style.borderColor="var(--gold)";opts[k].style.background="rgba(233,196,106,.12)";}}
+ quizAfter(ok,q);}
+function quizNum(){var q=QZ.items[QZ.i],raw=document.getElementById("qz-num").value;if(raw==="")return;var ok=Math.abs(parseFloat(raw)-q.answer)<=q.tol;quizGrade(ok,q);document.getElementById("qz-num").disabled=true;quizAfter(ok,q);}
+function quizAfter(ok,q){if(QZ.reveal){var fb=document.getElementById("qz-fb");fb.className="feedback show "+(ok?"good":"err");fb.innerHTML=(ok?"✅ נכון!":"❌ לא נכון")+'<div style="margin-top:6px">'+q.explain+'</div>';}document.getElementById("qz-next").style.display="";}
+function quizNext(){QZ.i++;if(QZ.i<QZ.items.length)quizRender();else QZ.onDone(QZ);}
+
+/* Warm-up */
+function warmupStart(){var seq=["pf","icm","pf","math","icm","pf","icm","math","pf","icm"];
+ var items=seq.map(function(t){return t==="pf"?pfItem():(t==="math"?mathItem():spotItem(["icm","pushfold"]));});
+ document.getElementById("wu-intro").style.display="none";document.getElementById("wu-card").style.display="block";
+ quizStart(document.getElementById("wu-quiz"),items,true,warmupDone);}
+function warmupDone(qz){
+ document.getElementById("wu-quiz").innerHTML='<div style="text-align:center"><div class="handbig" style="font-size:28px">🎯 מוכן לשולחן</div><div class="stat" style="display:inline-block;min-width:150px;margin-top:6px"><div class="n">'+qz.score+'/'+qz.items.length+'</div><div class="l">ציון חימום</div></div></div>'+
+ '<div class="note" style="margin-top:14px"><b>3 תזכורות לפני שאתה יושב:</b><br>• בכל יד שאל: "האם זו אותה החלטה בקאש? אם לא — למה ICM שינה אותה?"<br>• סטאק קצר = אגרסיבי · סטאק גדול קרוב לבועה = שמרן.<br>• שחק החלטות, לא תוצאות. נשימה אחרי כל bad-beat.</div>'+
+ '<div class="hero-quote" style="margin-top:12px">“'+pick(HERO_QUOTES)+'”</div>'+
+ '<div class="row-actions"><button class="btn primary" onclick="warmupReset()">חימום נוסף</button><button class="btn ghost" onclick="go(\'overview\')">בהצלחה בטורניר 🍀</button></div>';}
+function warmupReset(){document.getElementById("wu-intro").style.display="block";document.getElementById("wu-card").style.display="none";}
+
+/* Exam */
+function examStart(){var items=[];for(var i=0;i<10;i++){var r=Math.random();items.push(r<0.4?spotItem(null):(r<0.7?pfItem():mathItem()));}
+ document.getElementById("ex-intro").style.display="none";document.getElementById("ex-card").style.display="block";
+ quizStart(document.getElementById("ex-quiz"),items,false,examDone);}
+function examDone(qz){var pct=Math.round(100*qz.score/qz.items.length);
+ POKER.exams=POKER.exams||[];POKER.exams.push({date:todayKey(),score:qz.score,total:qz.items.length,pct:pct});scheduleSave();
+ var grade=pct>=90?"מצוין! 🏆":(pct>=70?"טוב מאוד 👍":(pct>=50?"בדרך הנכונה":"צריך עוד תרגול"));
+ var review=qz.answers.map(function(a,i){return '<div class="opt '+(a.ok?"correct":"wrong")+'" style="cursor:default"><b>'+(i+1)+'.</b> '+(a.ok?"✅ ":"❌ ")+'<span style="font-size:13px">'+a.q.explain+'</span></div>';}).join("");
+ document.getElementById("ex-quiz").innerHTML='<div style="text-align:center"><div class="handbig" style="font-size:44px;color:var(--gold)">'+pct+'</div><div class="mini">'+qz.score+'/'+qz.items.length+' · '+grade+'</div></div>'+
+  '<h3 style="margin-top:16px">סקירת השאלות</h3><div class="opts">'+review+'</div>'+
+  '<div class="row-actions"><button class="btn primary" onclick="examReset()">מבחן חדש</button><button class="btn ghost" onclick="go(\'overview\')">חזרה</button></div>'+examHistoryHtml();}
+function examReset(){document.getElementById("ex-intro").style.display="block";document.getElementById("ex-card").style.display="none";renderExam();}
+function examHistoryHtml(){var e=(POKER.exams||[]).slice().reverse().slice(0,12);if(!e.length)return"";
+ return '<h3 style="margin-top:16px">ציונים אחרונים</h3>'+e.map(function(x){return '<div class="goalcard"><div class="gico">📝</div><div class="gmid"><div class="gname">'+x.date+'</div></div><div class="gval">'+x.pct+' ('+x.score+'/'+x.total+')</div></div>';}).join("");}
+function renderExam(){var best=0;(POKER.exams||[]).forEach(function(x){if(x.pct>best)best=x.pct;});
+ var b=document.getElementById("ex-best");if(b)b.textContent=(POKER.exams&&POKER.exams.length)?best:"—";
+ var c=document.getElementById("ex-count");if(c)c.textContent=(POKER.exams||[]).length;
+ var h=document.getElementById("ex-hist");if(h)h.innerHTML=examHistoryHtml();}
+
+/* Daily */
+function isoD(dt){return dt.toISOString().slice(0,10);}
+function dailyStreak(){var d=POKER.stats.daily||{},T=DAILY_TARGET,streak=0,day=new Date();
+ var tk=isoD(day);if(!(d[tk]&&d[tk].a>=T))day.setDate(day.getDate()-1);
+ while(true){var k=isoD(day);if(d[k]&&d[k].a>=T){streak++;day.setDate(day.getDate()-1);}else break;}
+ return streak;}
+function renderDaily(){var dk=todayKey(),today=(POKER.stats.daily[dk]&&POKER.stats.daily[dk].a)||0,pct=Math.min(100,Math.round(100*today/DAILY_TARGET));
+ var bar=document.getElementById("daily-bar");if(bar)bar.style.width=pct+"%";
+ var c=document.getElementById("daily-count");if(c)c.textContent=today+"/"+DAILY_TARGET;
+ var st=document.getElementById("daily-streak");if(st)st.textContent=dailyStreak();
+ var dn=document.getElementById("daily-done");if(dn)dn.style.display=today>=DAILY_TARGET?"inline":"none";}
+
+/* Hand library */
+function handAdd(){var h=v("h-hand");if(!h){toast("איזו יד?");return;}
+ POKER.hands=POKER.hands||[];var stk=parseInt(document.getElementById("h-stack").value)||null;
+ POKER.hands.push({id:"h"+Date.now(),date:todayKey(),stage:v("h-stage"),stack:stk,pos:v("h-pos"),hand:h,action:v("h-action"),result:v("h-result"),notes:v("h-notes")});
+ ["h-hand","h-stack","h-pos","h-stage","h-action","h-result","h-notes"].forEach(function(id){document.getElementById(id).value="";});
+ renderHands();scheduleSave();toast("היד נשמרה לספרייה");}
+function handHint(stack,stage){if(stack&&stack<=15)return "בעומק "+stack+"bb זה אזור Push/Fold — שאב או קיפול. בדוק מול טווחי הסטאק ב-📖 מדריך.";
+ if(stage&&/בוע|גמר|final|itm|כסף/i.test(stage))return "שלב עם לחץ ICM — שאל: האם זו אותה החלטה בקאש? אם לא, ה-ICM מצדיק לשחק הדוק יותר.";
+ return "שאל תמיד: קאש מול טורניר? ומה עומק הסטאק שלי?";}
+function handDel(id){POKER.hands=(POKER.hands||[]).filter(function(x){return x.id!==id;});renderHands();scheduleSave();}
+function renderHands(){var box=document.getElementById("h-list");if(!box)return;var arr=(POKER.hands||[]).slice().reverse();
+ box.innerHTML=arr.length?"":'<div class="mini">עדיין אין ידיים בספרייה. תעד את היד הבאה שתאתגר אותך.</div>';
+ arr.forEach(function(x){var d=document.createElement("div");d.className="goalcard";
+  d.innerHTML='<div class="gico">🃏</div><div class="gmid"><div class="gname">'+esc(x.hand)+(x.stack?" · "+x.stack+"bb":"")+(x.pos?" · "+esc(x.pos):"")+(x.stage?" · "+esc(x.stage):"")+'</div>'+
+   ((x.action||x.result)?'<div class="mini">'+(x.action?"פעולה: "+esc(x.action):"")+(x.result?" · "+esc(x.result):"")+'</div>':'')+
+   (x.notes?'<div class="mini">'+esc(x.notes)+'</div>':'')+
+   '<div class="mini" style="color:var(--gold)">💡 '+handHint(x.stack,x.stage)+'</div></div>'+
+   '<div class="gval"><span class="del" onclick="handDel(\''+x.id+'\')">🗑️</span></div>';
+  box.appendChild(d);});}
+
+/* Upcoming tournaments */
+function upcomingAdd(){var dt=document.getElementById("u-date").value;if(!dt){toast("בחר תאריך");return;}
+ POKER.upcoming=POKER.upcoming||[];POKER.upcoming.push({id:"u"+Date.now(),date:dt,venue:v("u-venue"),series:v("u-series"),buyin:parseFloat(document.getElementById("u-buyin").value)||0,goal:v("u-goal")});
+ ["u-venue","u-series","u-buyin","u-goal"].forEach(function(id){document.getElementById(id).value="";});
+ renderUpcoming();scheduleSave();toast("נוסף ללוח");}
+function upcomingDel(id){POKER.upcoming=(POKER.upcoming||[]).filter(function(x){return x.id!==id;});renderUpcoming();scheduleSave();}
+function renderUpcoming(){var box=document.getElementById("u-list");if(!box)return;
+ var arr=(POKER.upcoming||[]).slice().sort(function(a,b){return a.date.localeCompare(b.date);}),today=todayKey();
+ if(!arr.length){box.innerHTML='<div class="mini">אין טורנירים מתוכננים. הוסף יעד להתכונן אליו — ותקבל ספירה לאחור וכפתור חימום.</div>';return;}
+ box.innerHTML="";
+ arr.forEach(function(t){var days=Math.ceil((new Date(t.date)-new Date(today))/86400000);
+  var cd=days<0?"עבר":(days===0?"היום! 🔥":"עוד "+days+" ימים");
+  var d=document.createElement("div");d.className="goalcard";
+  d.innerHTML='<div class="gico">🗓️</div><div class="gmid"><div class="gname">'+(esc(t.series)||"טורניר")+(t.venue?" · "+esc(t.venue):"")+'</div><div class="mini">'+t.date+" · "+cd+(t.buyin?" · $"+t.buyin:"")+(t.goal?" · יעד: "+esc(t.goal):"")+'</div></div>'+
+   '<div class="gval"><button class="btn ghost" style="padding:6px 10px" onclick="go(\'warmup\')">🔥 חימום</button> <span class="del" onclick="upcomingDel(\''+t.id+'\')">🗑️</span></div>';
+  box.appendChild(d);});}
+
+/* ---------- hero quotes ---------- */
+var HERO_QUOTES=["אלופים לא נולדים בשולחן הגמר — הם נבנים בכל החלטה קטנה שלפניו.","ההבדל בין בינוני למצוין הוא מה שאתה עושה כשהכי קשה לקפל.","ICM לא לוקח ממך אגרסיביות — הוא מלמד אותך מתי היא שווה זהב.","כל יד היא הזדמנות ללמוד. כל סשן הוא עוד צעד קדימה.","הסבלנות שליד השולחן נבנית בתרגול הרחק ממנו.","אתה כבר יודע לשחק. עכשיו לומדים לנצח את השלבים המאוחרים.","החלטה נכונה חוזרת אלף פעם — זה מה שהופך מזל לתוצאה."];
+function initHero(){var q=document.getElementById("heroQuote");if(q)q.textContent="“"+pick(HERO_QUOTES)+"”";}
+
+/* ============================================================
+   ONBOARDING + GUIDED TOUR
+   ============================================================ */
+var TOUR=[
+ {sel:'.tab[data-tab="learn"]',t:"מתחילים כאן 📚",x:"10 שיעורים קצרים שמלמדים GTO ו-ICM מאפס. עבור עליהם לפי הסדר."},
+ {sel:'.tab[data-tab="pushfold"]',t:"אחר כך: תרגול ♠️",x:"Push/Fold — שאב או קיפול לפי עומק הסטאק. הכלי הכי חשוב בטורניר."},
+ {sel:'.tab[data-tab="spot"]',t:"ICM 🎯",x:"ההחלטות שמבדילות טורניר מקאש — מתי לקפל גם יד חזקה."},
+ {sel:'#daily-card',t:"אימון יומי",x:"יעד של 18 החלטות ביום. עקביות בונה רצף ימים 🔥."},
+ {sel:'.tab[data-tab="warmup"]',t:"לפני טורניר 🔥",x:"חימום מהיר של 5 דקות כדי להיכנס בראש נכון."},
+ {sel:'.tab[data-tab="exam"]',t:"מבחן שבועי 📝",x:"10 שאלות עם ציון — ככה רואים התקדמות לאורך זמן."},
+ {sel:'.tab[data-tab="journal"]',t:"אחרי טורניר 📓",x:"תעד תוצאות וידיים מאתגרות. המערכת מחשבת ROI ו-ITM."},
+ {sel:'.tab[data-tab="career"]',t:"הקריירה שלך 📈",x:"הנתונים האמיתיים והמטרה: לסגור את הפער בשולחן הגמר."},
+ {sel:'.tab[data-tab="goals"]',t:"יעדים ודרגות 🏁",x:"אבני דרך שנפתחות מהאימון ומעלות אותך בדרגה."}
+];
+var tourI=0,tourEl=null;
+function startTour(){welcomeClose();tourI=0;go("overview");document.getElementById("tourBackdrop").classList.add("show");tourShow();}
+function tourShow(){
+ if(tourEl)tourEl.classList.remove("tour-hi");
+ var st=TOUR[tourI],el=document.querySelector(st.sel);tourEl=el;
+ if(el){el.classList.add("tour-hi");try{el.scrollIntoView({block:"center",behavior:"smooth"});}catch(e){}}
+ document.getElementById("tt-title").textContent=st.t;
+ document.getElementById("tt-text").textContent=st.x;
+ document.getElementById("tt-cnt").textContent=(tourI+1)+" / "+TOUR.length;
+ document.getElementById("tt-next").textContent=(tourI+1<TOUR.length)?"הבא ←":"סיום ✓";
+ var tip=document.getElementById("tourTip");tip.classList.add("show");
+ setTimeout(function(){positionTip(el,tip);},280);
+}
+function positionTip(el,tip){
+ var th=tip.offsetHeight,tw=tip.offsetWidth,vw=window.innerWidth,vh=window.innerHeight,top,left;
+ if(el){var r=el.getBoundingClientRect();top=r.bottom+12;if(top+th>vh-10)top=Math.max(10,r.top-th-12);
+  left=Math.min(Math.max(10,r.left+r.width/2-tw/2),vw-tw-10);}
+ else{top=vh/2-th/2;left=vw/2-tw/2;}
+ tip.style.top=top+"px";tip.style.left=left+"px";
+}
+function tourNext(){if(tourI+1<TOUR.length){tourI++;tourShow();}else tourEnd();}
+function tourEnd(){if(tourEl)tourEl.classList.remove("tour-hi");tourEl=null;
+ document.getElementById("tourBackdrop").classList.remove("show");document.getElementById("tourTip").classList.remove("show");
+ try{localStorage.setItem("poker_tour_ori_v1","1");}catch(e){}}
+function welcomeStartTour(){welcomeClose();startTour();}
+function welcomeClose(){document.getElementById("welcome").classList.remove("show");try{localStorage.setItem("poker_tour_ori_v1","1");}catch(e){}}
+function maybeOnboard(){try{if(!localStorage.getItem("poker_tour_ori_v1"))document.getElementById("welcome").classList.add("show");}catch(e){}}
+window.addEventListener("resize",function(){var tip=document.getElementById("tourTip");if(tip&&tip.classList.contains("show"))positionTip(tourEl,tip);});
+
+/* ---------- init ---------- */
+loadLocal();initHero();renderAll();buildSpotPool();
+var jd=document.getElementById("j-date");if(jd)jd.value=todayKey();
+loadCloud();
+maybeOnboard();
+</script>
+</body>
+</html>
