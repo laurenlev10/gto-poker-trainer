@@ -1159,6 +1159,29 @@ function renderHands(){var box=document.getElementById("h-list");if(!box)return;
    '<div class="gval"><span class="del" onclick="handDel(\''+x.id+'\')">🗑️</span></div>';
   box.appendChild(d);});}
 
+/* Pre-seeded international tournaments (Hendon Mob Spotlight) */
+var DEFAULT_UPCOMING=[
+ {date:"2026-07-22",venue:"Coventry, England",series:"GUKPT Goliath"},
+ {date:"2026-07-23",venue:"Tallinn, Estonia",series:"WSOP Circuit Estonia"},
+ {date:"2026-07-31",venue:"Šamorín, Slovakia",series:"WSOP Circuit Samorin"},
+ {date:"2026-08-03",venue:"Glasgow, Scotland",series:"PartyPoker Tour Glasgow"},
+ {date:"2026-08-07",venue:"Kyrenia, Cyprus",series:"Onyx HRS"},
+ {date:"2026-08-07",venue:"Incheon, South Korea",series:"Asian Poker Tour Incheon"},
+ {date:"2026-08-18",venue:"Liechtenstein",series:"Hendon Mob Championship (THMC)"},
+ {date:"2026-08-19",venue:"Taipei, Taiwan",series:"Players Series Championship IV"},
+ {date:"2026-08-31",venue:"Sydney, Australia",series:"Irish Open International"},
+ {date:"2026-09-14",venue:"St. Julian's, Malta",series:"The Festival in Malta"},
+ {date:"2026-09-22",venue:"Aix Les Bains, France",series:"Winamax Poker Open"},
+ {date:"2026-09-25",venue:"St. Julian's, Malta",series:"WSOP Circuit Malta"},
+ {date:"2026-09-25",venue:"Jeju, South Korea",series:"Asian Poker Tour Jeju"},
+ {date:"2026-11-10",venue:"Marrakech, Morocco",series:"Irish Open International"}
+];
+function seedUpcoming(){
+ if(POKER._seeded_upcoming)return;
+ POKER.upcoming=POKER.upcoming||[];
+ if(POKER.upcoming.length===0){DEFAULT_UPCOMING.forEach(function(t,i){POKER.upcoming.push({id:"seed"+i,date:t.date,venue:t.venue,series:t.series,buyin:0,goal:""});});}
+ POKER._seeded_upcoming=true;saveLocal();
+}
 /* Upcoming tournaments */
 function upcomingAdd(){var dt=document.getElementById("u-date").value;if(!dt){toast("בחר תאריך");return;}
  POKER.upcoming=POKER.upcoming||[];POKER.upcoming.push({id:"u"+Date.now(),date:dt,venue:v("u-venue"),series:v("u-series"),buyin:parseFloat(document.getElementById("u-buyin").value)||0,goal:v("u-goal")});
@@ -1224,7 +1247,7 @@ function maybeOnboard(){try{if(!localStorage.getItem("poker_tour_ori_v1"))docume
 window.addEventListener("resize",function(){var tip=document.getElementById("tourTip");if(tip&&tip.classList.contains("show"))positionTip(tourEl,tip);});
 
 /* ---------- init ---------- */
-loadLocal();initHero();renderAll();buildSpotPool();
+loadLocal();seedUpcoming();initHero();renderAll();buildSpotPool();
 var jd=document.getElementById("j-date");if(jd)jd.value=todayKey();
 loadCloud();
 maybeOnboard();
